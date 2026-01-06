@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #004d61;
+  --color-primary-light: #006680;
+  --color-primary-lighter: #0088a8;
+  --color-primary-pale: rgba(0, 77, 97, 0.2);
+  --color-topbar: #222831;
+  --color-coral: #ff6f61;
+  --color-bg-light: #f8f9fa;
+  --color-text-dark: #333333;
+}
+
+@layer base {
+  body {
+    background-color: #f8f9fa;
+    color: #333333;
+  }
+
+  * {
+    outline: none;
+  }
+
+  *:focus {
+    outline: none;
+  }
+
+  /* Ensure borders are not clipped */
+  .overflow-hidden {
+    overflow: hidden;
+  }
+
+  /* Allow proper rendering of rounded borders */
+  [class*="rounded"] {
+    overflow: visible;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Sonner Toast Customization */
+[data-sonner-toaster] {
+  font-family: inherit;
+}
+
+[data-sonner-toast] {
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(0, 77, 97, 0.1) !important;
+  padding: 16px !important;
+}
+
+[data-sonner-toast][data-type="success"] {
+  background-color: #f0fdf4 !important;
+  border-color: #86efac !important;
+  color: #166534 !important;
+}
+
+[data-sonner-toast][data-type="error"] {
+  background-color: #fef2f2 !important;
+  border-color: #fca5a5 !important;
+  color: #991b1b !important;
+}
+
+[data-sonner-toast][data-type="warning"] {
+  background-color: #fffbeb !important;
+  border-color: #fcd34d !important;
+  color: #92400e !important;
+}
+
+[data-sonner-toast][data-type="info"] {
+  background-color: #eff6ff !important;
+  border-color: #93c5fd !important;
+  color: #1e40af !important;
+}
+
+[data-sonner-toast] [data-icon] {
+  color: inherit;
+}
+
+[data-sonner-toast] [data-title] {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+[data-sonner-toast] [data-description] {
+  font-size: 13px;
+  opacity: 0.9;
+}
