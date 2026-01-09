@@ -12,6 +12,7 @@ interface AddToCartModalProps {
     name: string;
     price: number;
     notes?: string;
+    quantity?: number;
   } | null;
   onConfirm: (product: {
     id: string;
@@ -32,7 +33,7 @@ export function AddToCartModal({
   // Reset form when modal opens or product changes
   useEffect(() => {
     if (isOpen && product) {
-      setQuantity(1);
+      setQuantity(product.quantity || 1);
     }
   }, [isOpen, product]);
 

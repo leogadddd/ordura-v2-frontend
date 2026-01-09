@@ -3,7 +3,10 @@ import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useProducts } from "@/hooks/useProducts";
 import { POSProductItem } from "@/components/POSProductItem";
 import { AddToCartModal } from "@/components/modals/AddToCartModal";
+import { CheckoutModal } from "@/components/modals/CheckoutModal";
 import { Cart } from "@/components/Cart";
+import { createOrder } from "@/api/createOrderApi";
+import { showToast } from "@/lib/toast";
 
 interface CartItem {
   id: string;
@@ -21,8 +24,16 @@ export function POSPage() {
     name: string;
     price: number;
     notes?: string;
+    quantity?: number;
   } | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddToCartModalOpen, setIsAddToCartModalOpen] = useState(false);
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fee state
+  const [orderDiscount, setOrderDiscount] = useState(0);
+  const [serviceFee, setServiceFee] = useState(0);
+  const [deliveryFee, setDeliveryFee] = useState(0);
 
   const { data, isLoading, error } = useProducts({
     includeDrafts: false, // Only show active products in POS
@@ -61,7 +72,7 @@ export function POSPage() {
 
   const addToCart = (product: { id: string; name: string; price: number }) => {
     setSelectedProduct(product);
-    setIsModalOpen(true);
+    setIsAddToCartModalOpen(true);
   };
 
   const handleConfirmAddToCart = (productWithDetails: {
@@ -84,7 +95,7 @@ export function POSPage() {
     } else {
       setCart([...cart, { ...productWithDetails }]);
     }
-    setIsModalOpen(false);
+    setIsAddToCartModalOpen(false);
   };
 
   const updateQuantity = (id: string, delta: number) => {
@@ -106,8 +117,64 @@ export function POSPage() {
   };
 
   const handlePlaceOrder = () => {
-    // TODO: Implement place order functionality
-    console.log("Place order", cart);
+    if (cart.length === 0) {
+      showToast.error("Cart is empty");
+      return;
+    }
+    setIsCheckoutModalOpen(true);
+  };
+
+  const handleConfirmPayment = async (payment: {
+    method: string;
+    amountReceived: number;
+  }) => {
+    setIsSubmitting(true);
+    try {
+      // Calculate totals
+      const subtotal = cart.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      );
+      const discountedSubtotal = subtotal - orderDiscount;
+      const taxAmount = discountedSubtotal * 0.12;
+      const grandTotal =
+        discountedSubtotal + taxAmount + serviceFee + deliveryFee;
+
+      // Create order
+      await createOrder({
+        items: cart.map((item) => ({
+          productId: item.id,
+          name: item.name,
+          unitPrice: item.price,
+          quantity: item.quantity,
+          taxRate: 0.12,
+        })),
+        subtotal,
+        orderDiscount,
+        serviceFee,
+        deliveryFee,
+        taxTotal: taxAmount,
+        grandTotal,
+        paymentMethod: payment.method,
+        amountReceived: payment.amountReceived,
+      });
+
+      showToast.success("Order placed successfully!");
+      setCart([]);
+      setOrderDiscount(0);
+      setServiceFee(0);
+      setDeliveryFee(0);
+      setIsCheckoutModalOpen(false);
+    } catch (error: any) {
+      console.error("Failed to place order:", error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to place order";
+      showToast.error(String(errorMessage));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleEditItem = (item: CartItem) => {
@@ -115,18 +182,30 @@ export function POSPage() {
       id: item.id,
       name: item.name,
       price: item.price,
-      notes: products.find(p => p.id === item.id)?.notes,
+      notes: products.find((p) => p.id === item.id)?.notes,
+      quantity: item.quantity,
     });
-    setIsModalOpen(true);
+    setIsAddToCartModalOpen(true);
   };
 
   return (
     <div className="h-full flex flex-col">
       <AddToCartModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isAddToCartModalOpen}
+        onClose={() => setIsAddToCartModalOpen(false)}
         product={selectedProduct}
         onConfirm={handleConfirmAddToCart}
+      />
+      <CheckoutModal
+        isOpen={isCheckoutModalOpen}
+        onClose={() => setIsCheckoutModalOpen(false)}
+        cartItems={cart}
+        subtotal={cart.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        )}
+        onConfirmPayment={handleConfirmPayment}
+        isLoading={isSubmitting}
       />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 overflow-hidden h-full">
         {/* Products Section */}
@@ -225,6 +304,12 @@ export function POSPage() {
           onClear={clearCart}
           onPlaceOrder={handlePlaceOrder}
           onEditItem={handleEditItem}
+          orderDiscount={orderDiscount}
+          serviceFee={serviceFee}
+          deliveryFee={deliveryFee}
+          onOrderDiscountChange={setOrderDiscount}
+          onServiceFeeChange={setServiceFee}
+          onDeliveryFeeChange={setDeliveryFee}
         />
       </div>
     </div>

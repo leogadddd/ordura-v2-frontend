@@ -11,6 +11,7 @@ interface PopoverProps {
   children: (close: () => void) => ReactNode;
   align?: "left" | "right";
   className?: string;
+  matchTriggerWidth?: boolean;
 }
 
 export function Popover({
@@ -18,6 +19,7 @@ export function Popover({
   children,
   align = "right",
   className,
+  matchTriggerWidth = false,
 }: PopoverProps) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
@@ -72,7 +74,7 @@ export function Popover({
           <div
             ref={panelRef}
             className={clsx(
-              "fixed mt-2 min-w-40 rounded-lg border border-gray-200 bg-white shadow-lg"
+              "fixed min-w-40 rounded-lg border border-gray-200 bg-white shadow-lg"
             )}
             style={{
               top: position.top + 8,
@@ -81,6 +83,7 @@ export function Popover({
                   ? position.left + position.width - 160
                   : position.left,
               zIndex: 9999,
+              width: matchTriggerWidth ? position.width : undefined,
             }}
           >
             {children(close)}

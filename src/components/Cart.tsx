@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { MinusIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { FeesConfigModal } from "@/components/modals/FeesConfigModal";
 
 interface CartItem {
   id: string;
@@ -17,6 +18,12 @@ interface CartProps {
   onClear: () => void;
   onPlaceOrder: () => void;
   onEditItem: (item: CartItem) => void;
+  orderDiscount?: number;
+  serviceFee?: number;
+  deliveryFee?: number;
+  onOrderDiscountChange?: (value: number) => void;
+  onServiceFeeChange?: (value: number) => void;
+  onDeliveryFeeChange?: (value: number) => void;
 }
 
 export function Cart({
@@ -26,14 +33,33 @@ export function Cart({
   onClear,
   onPlaceOrder,
   onEditItem,
+  orderDiscount = 0,
+  serviceFee = 0,
+  deliveryFee = 0,
+  onOrderDiscountChange,
+  onServiceFeeChange,
+  onDeliveryFeeChange,
 }: CartProps) {
   const [itemToRemove, setItemToRemove] = useState<string | null>(null);
+  const [isFeesModalOpen, setIsFeesModalOpen] = useState(false);
+
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const tax = subtotal * 0.12; // 12% VAT
-  const total = subtotal + tax;
+  const discountedSubtotal = subtotal - orderDiscount;
+  const tax = discountedSubtotal * 0.12; // 12% VAT
+  const total = discountedSubtotal + tax + serviceFee + deliveryFee;
+
+  const handleApplyFees = (
+    newOrderDiscount: number,
+    newServiceFee: number,
+    newDeliveryFee: number
+  ) => {
+    onOrderDiscountChange?.(newOrderDiscount);
+    onServiceFeeChange?.(newServiceFee);
+    onDeliveryFeeChange?.(newDeliveryFee);
+  };
 
   return (
     <div className="flex flex-col bg-gray-50 pb-4 border border-gray-200 min-h-0 h-full">
@@ -55,8 +81,8 @@ export function Cart({
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr 
-                  key={item.id} 
+                <tr
+                  key={item.id}
                   className="border-b border-gray-200 cursor-pointer hover:bg-gray-50"
                   onClick={() => onEditItem(item)}
                 >
@@ -94,7 +120,7 @@ export function Cart({
                   <td className="p-3 text-right font-bold text-gray-900">
                     ₱{(item.price * item.quantity).toFixed(2)}
                   </td>
-                  <td className="p-3 text-center pt-4">
+                  <td className="p-3 text-center pt-1">
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -119,6 +145,37 @@ export function Cart({
           <span className="text-gray-600">Subtotal</span>
           <span className="font-medium">₱{subtotal.toFixed(2)}</span>
         </div>
+
+        {/* Fees Link */}
+        <button
+          onClick={() => setIsFeesModalOpen(true)}
+          className="text-sm text-primary underline hover:text-primary-dark transition"
+        >
+          Configure Fees
+        </button>
+
+        {/* Conditional Fee Rows - Only show if non-zero */}
+        {orderDiscount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Order Discount</span>
+            <span className="font-medium text-red-600">
+              -₱{orderDiscount.toFixed(2)}
+            </span>
+          </div>
+        )}
+        {serviceFee > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Service Fee</span>
+            <span className="font-medium">₱{serviceFee.toFixed(2)}</span>
+          </div>
+        )}
+        {deliveryFee > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Delivery Fee</span>
+            <span className="font-medium">₱{deliveryFee.toFixed(2)}</span>
+          </div>
+        )}
+
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">VAT (12%)</span>
           <span className="font-medium">₱{tax.toFixed(2)}</span>
@@ -128,6 +185,17 @@ export function Cart({
           <span className="text-primary">₱{total.toFixed(2)}</span>
         </div>
       </div>
+
+      {/* Fees Config Modal */}
+      <FeesConfigModal
+        isOpen={isFeesModalOpen}
+        onClose={() => setIsFeesModalOpen(false)}
+        orderDiscount={orderDiscount}
+        serviceFee={serviceFee}
+        deliveryFee={deliveryFee}
+        subtotal={subtotal}
+        onApply={handleApplyFees}
+      />
 
       <div className="p-4 pt-0 flex gap-2">
         <Button

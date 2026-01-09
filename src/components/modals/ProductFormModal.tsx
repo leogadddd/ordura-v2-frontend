@@ -4,10 +4,12 @@ import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { productFormSchema } from "@/routes/products/schema";
 import { InformationCircleIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { useCreateProduct, useUpdateProduct } from "@/hooks/useProducts";
 import { showToast } from "@/lib/toast";
+import { useOptions } from "@/context/OptionsProvider";
 import type { Product } from "@/api/productsApi";
 
 interface ProductFormModalProps {
@@ -36,8 +38,26 @@ export function ProductFormModal({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Fulfillment state
+  const [requiresFulfillment, setRequiresFulfillment] =
+    useState<boolean>(false);
+  const [fulfillmentType, setFulfillmentType] = useState<string | undefined>(
+    undefined
+  );
+
+  const { fulfillmentTypes, refreshFulfillmentTypes } = useOptions();
+
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct();
+
+  // Fetch fulfillment types on mount if needed
+  useEffect(() => {
+    if (!fulfillmentTypes) {
+      refreshFulfillmentTypes().catch((err) =>
+        console.error("Failed to load fulfillment types:", err)
+      );
+    }
+  }, [fulfillmentTypes, refreshFulfillmentTypes]);
 
   // Reset form when modal opens/closes or product changes
   useEffect(() => {
@@ -51,6 +71,9 @@ export function ProductFormModal({
         notes: product?.notes || "",
       });
       setStatus(product?.status || "ACTIVE");
+      // Pre-populate fulfillment fields when editing
+      setRequiresFulfillment(product?.requiresFulfillment ?? false);
+      setFulfillmentType((product as any)?.fulfillmentTypeId ?? undefined);
       setErrors({});
     }
   }, [isOpen, product]);
@@ -110,6 +133,8 @@ export function ProductFormModal({
         sellingPrice: parseFloat(formData.sellingPrice),
         status: status,
         isDraft: false,
+        requiresFulfillment: requiresFulfillment,
+        fulfillmentTypeId: requiresFulfillment ? fulfillmentType : undefined,
       };
 
       console.log("Saving product:", productData);
@@ -161,6 +186,8 @@ export function ProductFormModal({
         sellingPrice: parseFloat(formData.sellingPrice) || 0,
         status: status,
         isDraft: true,
+        requiresFulfillment: requiresFulfillment,
+        fulfillmentTypeId: requiresFulfillment ? fulfillmentType : undefined,
       };
 
       if (product) {
@@ -197,7 +224,7 @@ export function ProductFormModal({
       icon={<PlusIcon className="w-6 h-6" />}
     >
       <div className="flex flex-col h-full">
-        <div className="flex-1 overflow-auto space-y-6 pb-4 pr-4 pt-4">
+        <div className="flex-1 overflow-auto space-y-6 pr-4 pt-4 pb-10">
           {/* Product Details Section */}
           <section className="flex gap-6">
             <div className="w-[30%]">
@@ -374,6 +401,59 @@ export function ProductFormModal({
                     </div>
                   </Tooltip>
                 </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Fulfillment Section */}
+          <section className="flex gap-6 pt-6 border-t border-gray-200">
+            <div className="w-[30%]">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-lg font-semibold text-primary">
+                  Fulfillment
+                </h3>
+                <Tooltip
+                  content="Configure if this product requires fulfillment and its type"
+                  position="right"
+                >
+                  <InformationCircleIcon className="w-5 h-5 text-gray-400" />
+                </Tooltip>
+              </div>
+              <p className="text-sm text-gray-600">
+                Some products need preparation like cooking or assembly. Enable
+                fulfillment and choose a type.
+              </p>
+            </div>
+            <div className="w-[70%] space-y-4">
+              <div className="flex items-center gap-3">
+                <input
+                  id="requiresFulfillment"
+                  type="checkbox"
+                  checked={requiresFulfillment}
+                  onChange={(e) => setRequiresFulfillment(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <label
+                  htmlFor="requiresFulfillment"
+                  className="text-sm text-gray-700 cursor-pointer"
+                >
+                  Requires Fulfillment
+                </label>
+              </div>
+              <div className="max-w-sm">
+                <Select
+                  label="Fulfillment Type"
+                  value={fulfillmentType ?? ""}
+                  onChange={(e) =>
+                    setFulfillmentType((e.target.value || undefined) as any)
+                  }
+                  disabled={!requiresFulfillment}
+                  placeholder="Select type"
+                  options={(fulfillmentTypes || []).map((ft) => ({
+                    label: ft.name,
+                    value: ft.id,
+                  }))}
+                />
               </div>
             </div>
           </section>

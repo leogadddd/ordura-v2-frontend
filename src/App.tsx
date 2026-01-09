@@ -5,6 +5,7 @@ import RegisterPage from "./routes/Register";
 import DashboardPage from "./routes/Dashboard";
 import POSPage from "./routes/POS";
 import ProductsPage from "./routes/products";
+import OrdersPage from "./routes/orders";
 import AppLayout from "./layouts/AppLayout";
 import { useAuthStore } from "./store/authStore";
 import { getCurrentUser } from "./api/authApi";
@@ -61,6 +62,14 @@ function App() {
         element={
           <AppLayout>
             <ProductsPage />
+          </AppLayout>
+        }
+      />
+      <Route
+        path="/orders"
+        element={
+          <AppLayout>
+            <OrdersPage />
           </AppLayout>
         }
       />

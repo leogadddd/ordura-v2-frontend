@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { login } from "../api/authApi";
@@ -76,12 +77,12 @@ export function LoginPage() {
                 />
                 <span className="ml-2 text-sm text-gray-600">Remember me</span>
               </label>
-              <a
-                href="#"
+              <button
+                type="button"
                 className="text-sm text-primary hover:text-primary-light transition-colors"
               >
                 Forgot password?
-              </a>
+              </button>
             </div>
 
             {error && (
@@ -104,12 +105,12 @@ export function LoginPage() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}
-              <a
-                href="/register"
+              <Link
+                to="/register"
                 className="text-primary hover:text-primary-light font-medium transition-colors"
               >
                 Register here
-              </a>
+              </Link>
             </p>
           </div>
         </div>

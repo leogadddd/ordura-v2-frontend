@@ -12,6 +12,8 @@ export interface Product {
   sellingPrice: number;
   status: "ACTIVE" | "INACTIVE" | "OUT_OF_STOCK";
   isDraft: boolean;
+  requiresFulfillment: boolean;
+  fulfillmentTypeId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -24,6 +26,8 @@ export interface CreateProductData {
   cost: number;
   sellingPrice: number;
   isDraft?: boolean;
+  requiresFulfillment?: boolean;
+  fulfillmentTypeId?: string;
 }
 
 export interface UpdateProductData {
@@ -35,6 +39,8 @@ export interface UpdateProductData {
   sellingPrice?: number;
   status?: "ACTIVE" | "INACTIVE" | "OUT_OF_STOCK";
   isDraft?: boolean;
+  requiresFulfillment?: boolean;
+  fulfillmentTypeId?: string | null;
 }
 
 export interface ListProductsParams {

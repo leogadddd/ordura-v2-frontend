@@ -12,6 +12,7 @@ import type {
 import type { Product } from "@/api/productsApi";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Popover } from "@/components/ui/Popover";
+import { useOptions } from "@/context/OptionsProvider";
 
 export type EditHandler = (product: Product) => void;
 export type DeleteHandler = (id: string) => void | Promise<void>;
@@ -20,6 +21,14 @@ export function getProductColumnDefs(
   handleEdit: EditHandler,
   handleDelete: DeleteHandler
 ): ColDef<Product>[] {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { fulfillmentTypes } = useOptions();
+
+  function getFulfillmentTypeName(typeId?: string): string {
+    if (!typeId) return "-";
+    return fulfillmentTypes?.find((ft) => ft.id === typeId)?.name || "Unknown";
+  }
+
   function ActionsCell(params: ICellRendererParams<Product>) {
     const product = params.data as Product | undefined;
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -158,6 +167,28 @@ export function getProductColumnDefs(
           ? `₱${params.value.toFixed(2)}`
           : "₱0.00",
       cellClass: "text-right font-medium",
+    },
+    {
+      headerName: "Fulfillment Type",
+      field: "fulfillmentTypeId" as keyof Product,
+      flex: 1,
+      minWidth: 150,
+      cellRenderer: (params: ICellRendererParams<Product>) => {
+        const typeId = params.data?.fulfillmentTypeId;
+        const requiresFulfillment = params.data?.requiresFulfillment;
+
+        if (!requiresFulfillment) {
+          return (
+            <span className="text-gray-400 text-sm italic">Not required</span>
+          );
+        }
+
+        return (
+          <span className="text-gray-900 font-medium">
+            {getFulfillmentTypeName(typeId)}
+          </span>
+        );
+      },
     },
     {
       headerName: "Status",
