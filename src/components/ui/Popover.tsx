@@ -11,7 +11,9 @@ interface PopoverProps {
   children: (close: () => void) => ReactNode;
   align?: "left" | "right";
   className?: string;
+  panelClassName?: string;
   matchTriggerWidth?: boolean;
+  placement?: "top" | "bottom";
 }
 
 export function Popover({
@@ -19,24 +21,38 @@ export function Popover({
   children,
   align = "right",
   className,
+  panelClassName,
   matchTriggerWidth = false,
+  placement = "bottom",
 }: PopoverProps) {
   const [open, setOpen] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
+  const [position, setPosition] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+    height: 0,
+  });
   const containerRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
 
   const close = () => setOpen(false);
   const toggle = () => {
-    if (!open && containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      setPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
-        width: rect.width,
-      });
-    }
-    setOpen((prev) => !prev);
+    setOpen((prev) => {
+      const newOpen = !prev;
+
+      // Calculate position when opening
+      if (newOpen && containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setPosition({
+          top: rect.top + window.scrollY,
+          left: rect.left + window.scrollX,
+          width: rect.width,
+          height: rect.height,
+        });
+      }
+
+      return newOpen;
+    });
   };
 
   // Close on outside click
@@ -63,10 +79,7 @@ export function Popover({
 
   return (
     <>
-      <div
-        ref={containerRef}
-        className={clsx("relative inline-block", className)}
-      >
+      <div ref={containerRef} className={clsx("relative", className)}>
         {trigger({ open, toggle, close })}
       </div>
       {open &&
@@ -74,16 +87,21 @@ export function Popover({
           <div
             ref={panelRef}
             className={clsx(
-              "fixed min-w-40 rounded-lg border border-gray-200 bg-white shadow-lg"
+              "fixed min-w-40 rounded-xl border border-gray-200 bg-white shadow-lg",
+              panelClassName
             )}
             style={{
-              top: position.top + 8,
+              top:
+                placement === "top"
+                  ? position.top - 8
+                  : position.top + position.height + 8,
               left:
                 align === "right"
-                  ? position.left + position.width - 160
+                  ? Math.max(8, position.left + position.width - 160)
                   : position.left,
               zIndex: 9999,
               width: matchTriggerWidth ? position.width : undefined,
+              transform: placement === "top" ? "translateY(-100%)" : undefined,
             }}
           >
             {children(close)}

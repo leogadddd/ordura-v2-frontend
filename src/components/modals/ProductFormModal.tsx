@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
-import { productFormSchema } from "@/routes/products/schema";
+import { productFormSchema } from "@/pages/products/schema";
 import { InformationCircleIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { useCreateProduct, useUpdateProduct } from "@/hooks/useProducts";
 import { showToast } from "@/lib/toast";

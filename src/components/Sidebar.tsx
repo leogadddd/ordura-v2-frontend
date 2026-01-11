@@ -1,114 +1,227 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
-  HomeIcon,
-  ShoppingCartIcon,
-  CubeIcon,
-  Squares2X2Icon,
-  DocumentChartBarIcon,
-  Cog6ToothIcon,
   ChevronRightIcon,
   ChevronLeftIcon,
-  UserPlusIcon,
-  ClipboardDocumentListIcon,
+  UserIcon,
+  ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
+import {
+  HomeIcon,
+  MonitorIcon,
+  PackageIcon,
+  ScrollIcon,
+  SettingsIcon,
+} from "lucide-react";
+import { Popover } from "@/components/ui/Popover";
+import { useAuthStore } from "@/store/authStore";
+import { logout } from "@/api/authApi";
 
 const navItems = [
   { label: "Dashboard", to: "/dashboard", icon: HomeIcon },
-  { label: "POS", to: "/pos", icon: ShoppingCartIcon },
-  { label: "Products", to: "/products", icon: CubeIcon },
-  { label: "Orders", to: "/orders", icon: ClipboardDocumentListIcon },
-  { label: "Inventory", to: "/inventory", icon: Squares2X2Icon },
-  { label: "Reports", to: "/reports", icon: DocumentChartBarIcon },
-  { label: "Register", to: "/register", icon: UserPlusIcon },
+  { label: "Point Of Sale", to: "/pos", icon: MonitorIcon },
+  { label: "Products", to: "/products", icon: PackageIcon },
+  { label: "Orders", to: "/orders", icon: ScrollIcon },
+  // { label: "Inventory", to: "/inventory", icon: Squares2X2Icon },
+  // { label: "Reports", to: "/reports", icon: DocumentChartBarIcon },
+  // { label: "Register", to: "/register", icon: UserPlusIcon },
 ];
 
 const bottomNavItems = [
-  { label: "Settings", to: "/settings", icon: Cog6ToothIcon },
+  { label: "Settings", to: "/settings", icon: SettingsIcon },
 ];
 
 export function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
+  const user = useAuthStore((state) => state.user);
+  const clearUser = useAuthStore((state) => state.clearUser);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      clearUser();
+      navigate("/login");
+    }
+  };
+
+  // Generate a background color based on the user's first letter
+  const getAvatarColor = (name: string | null) => {
+    if (!name) return "bg-primary"; // Stable accent color when user not yet loaded
+    const colors = [
+      "bg-red-500",
+      "bg-orange-500",
+      "bg-amber-500",
+      "bg-yellow-500",
+      "bg-lime-500",
+      "bg-green-500",
+      "bg-emerald-500",
+      "bg-teal-500",
+      "bg-cyan-500",
+      "bg-sky-500",
+      "bg-blue-500",
+      "bg-indigo-500",
+      "bg-violet-500",
+      "bg-purple-500",
+      "bg-fuchsia-500",
+      "bg-pink-500",
+      "bg-rose-500",
+    ];
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
+  };
+
+  const userInitial =
+    user?.firstName?.charAt(0)?.toUpperCase() ||
+    user?.username?.charAt(0)?.toUpperCase() ||
+    null;
+  const userName =
+    user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`
+      : user?.username || "User";
 
   return (
-    <aside
-      className={`hidden border-r border-primary-pale bg-white/90 shadow-sm md:flex md:flex-col md:py-2 ${
-        isExpanded ? "w-48 md:px-1.5" : "w-14 md:items-center md:px-1.5"
-      }`}
-    >
-      <div className="mb-1">
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className={`flex items-center gap-2.5 rounded-xl h-12 text-gray-600 hover:bg-primary-pale ${
-            isExpanded ? "px-3 w-full" : "w-11 px-3 justify-center"
-          }`}
-          title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
-        >
-          {isExpanded ? (
-            <>
-              <ChevronLeftIcon className="w-5 h-5" />
-              {/* <span className="text-sm font-medium">Collapse</span> */}
-            </>
-          ) : (
-            <ChevronRightIcon className="w-5 h-5" />
-          )}
-        </button>
-      </div>
+    <div className="hidden md:block">
+      <aside
+        className={`h-[calc(100vh-1.75rem)] sticky top-0 border-r border-primary-pale bg-white/90 shadow-sm flex flex-col py-2 ${
+          isExpanded ? "w-48 px-1.5" : "w-14 items-center px-1.5"
+        }`}
+      >
+        <div className="mb-1">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className={`flex items-center gap-2.5 rounded-xl h-12 text-gray-600 hover:bg-primary-pale ${
+              isExpanded ? "px-3 w-full" : "w-11 px-3 justify-center"
+            }`}
+            title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
+          >
+            {isExpanded ? (
+              <>
+                <ChevronLeftIcon className="w-5 h-5" />
+                {/* <span className="text-sm font-medium">Collapse</span> */}
+              </>
+            ) : (
+              <ChevronRightIcon className="w-5 h-5" />
+            )}
+          </button>
+        </div>
 
-      <nav className="space-y-1 flex-1">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `flex items-center gap-2.5 rounded-xl h-12 ${
-                  isExpanded ? "px-3" : "w-11 px-3"
-                } ${
-                  isActive
-                    ? "bg-primary text-white"
-                    : "text-gray-600 hover:bg-primary-pale"
-                }`
-              }
-              title={!isExpanded ? item.label : undefined}
-            >
-              <Icon className="w-5 h-5" />
-              {isExpanded && (
-                <span className="text-sm font-medium">{item.label}</span>
-              )}
-            </NavLink>
-          );
-        })}
-      </nav>
+        <nav className="space-y-1 flex-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-2.5 rounded-xl h-12 ${
+                    isExpanded ? "px-3" : "w-11 px-3"
+                  } ${
+                    isActive
+                      ? "bg-primary text-white"
+                      : "text-gray-600 hover:bg-primary-pale"
+                  }`
+                }
+                title={!isExpanded ? item.label : undefined}
+              >
+                <Icon className="w-5 h-5" />
+                {isExpanded && (
+                  <span className="text-sm font-medium">{item.label}</span>
+                )}
+              </NavLink>
+            );
+          })}
+        </nav>
 
-      <nav className="space-y-1 mt-auto">
-        {bottomNavItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `flex items-center gap-2.5 rounded-xl h-12 ${
-                  isExpanded ? "px-3" : "w-11 px-3"
-                } ${
-                  isActive
-                    ? "bg-primary text-white"
-                    : "text-gray-600 hover:bg-primary-pale"
-                }`
-              }
-              title={!isExpanded ? item.label : undefined}
-            >
-              <Icon className="w-5 h-5" />
-              {isExpanded && (
-                <span className="text-sm font-medium">{item.label}</span>
-              )}
-            </NavLink>
-          );
-        })}
-      </nav>
-    </aside>
+        <nav className="space-y-1 mt-auto">
+          {bottomNavItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-2.5 rounded-xl h-12 ${
+                    isExpanded ? "px-3" : "w-11 px-3"
+                  } ${
+                    isActive
+                      ? "bg-primary text-white"
+                      : "text-gray-600 hover:bg-primary-pale"
+                  }`
+                }
+                title={!isExpanded ? item.label : undefined}
+              >
+                <Icon className="w-5 h-5" />
+                {isExpanded && (
+                  <span className="text-sm font-medium">{item.label}</span>
+                )}
+              </NavLink>
+            );
+          })}
+
+          {/* Profile Button with Popover */}
+          <Popover
+            trigger={({ toggle }) => (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggle();
+                }}
+                className={`flex items-center gap-2.5 rounded-xl h-12 ${
+                  isExpanded ? "px-1.5 w-full" : "w-11 px-3 justify-center"
+                } text-gray-600 hover:bg-primary-pale`}
+                title={!isExpanded ? "Account" : undefined}
+              >
+                <div
+                  className={`${getAvatarColor(
+                    userInitial
+                  )} w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm shrink-0`}
+                >
+                  {userInitial ?? "U"}
+                </div>
+                {isExpanded && (
+                  <span className="text-sm font-medium truncate">
+                    {userName}
+                  </span>
+                )}
+              </button>
+            )}
+            align="left"
+            placement="top"
+            matchTriggerWidth={isExpanded}
+            panelClassName=""
+          >
+            {(close) => (
+              <div className="">
+                <button
+                  onClick={() => {
+                    close();
+                    navigate("/account");
+                  }}
+                  className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 flex items-center gap-3 text-gray-700"
+                >
+                  <UserIcon className="w-5 h-5" />
+                  Account
+                </button>
+                <button
+                  onClick={() => {
+                    close();
+                    handleLogout();
+                  }}
+                  className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 flex items-center gap-3 text-red-600"
+                >
+                  <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                  Logout
+                </button>
+              </div>
+            )}
+          </Popover>
+        </nav>
+      </aside>
+    </div>
   );
 }
 

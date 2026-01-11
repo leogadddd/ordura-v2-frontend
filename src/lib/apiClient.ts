@@ -24,14 +24,22 @@ apiClient.interceptors.response.use(
       _retry?: boolean;
     };
 
-    // Skip token refresh for auth endpoints (login, register, etc.)
-    const isAuthEndpoint = originalRequest.url?.includes("/auth/");
+    // Skip token refresh only for login/register/refresh/logout endpoints
+    const authSkipPaths = [
+      "/auth/login",
+      "/auth/register",
+      "/auth/refresh",
+      "/auth/logout",
+    ];
+    const shouldSkipRefresh = authSkipPaths.some((path) =>
+      originalRequest.url?.includes(path)
+    );
 
     // If error is 401, not an auth endpoint, and we haven't retried yet
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !isAuthEndpoint
+      !shouldSkipRefresh
     ) {
       originalRequest._retry = true;
 

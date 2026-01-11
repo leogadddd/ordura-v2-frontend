@@ -13,7 +13,7 @@ export type ViewHandler = (order: Order) => void;
 export function getOrderColumnDefs(handleView?: ViewHandler): ColDef<Order>[] {
   function ActionsCell(params: ICellRendererParams<Order>) {
     const order = params.data as Order | undefined;
-    const [openKey, setOpenKey] = useState<string>("");
+    const [_openKey, setOpenKey] = useState<string>("");
 
     useEffect(() => {
       setOpenKey("");
@@ -39,7 +39,7 @@ export function getOrderColumnDefs(handleView?: ViewHandler): ColDef<Order>[] {
           align="right"
         >
           {(close) => (
-            <div className="py-1">
+            <div className="">
               <button
                 onClick={() => {
                   handleView && handleView(order);

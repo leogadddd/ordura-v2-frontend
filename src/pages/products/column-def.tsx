@@ -70,7 +70,7 @@ export function getProductColumnDefs(
             align="right"
           >
             {(close) => (
-              <div className="py-1">
+              <div className="">
                 <button
                   onClick={() => {
                     handleEdit(product);
@@ -118,16 +118,11 @@ export function getProductColumnDefs(
       maxWidth: 120,
     },
     {
-      headerName: "SKU",
-      field: "sku" as keyof Product,
-      flex: 1,
-      minWidth: 140,
-    },
-    {
       headerName: "Product Name",
       field: "name" as keyof Product,
       flex: 1.4,
       minWidth: 200,
+      // pinned: "left",
       cellRenderer: (params: ICellRendererParams<Product>) => {
         const data = params.data as Product | undefined;
         if (!data) return null;
@@ -141,6 +136,12 @@ export function getProductColumnDefs(
           </div>
         );
       },
+    },
+    {
+      headerName: "SKU",
+      field: "sku" as keyof Product,
+      flex: 1,
+      minWidth: 140,
     },
     {
       headerName: "Category",

@@ -141,11 +141,6 @@ export function Cart({
 
       {/* Totals */}
       <div className="border-t border-gray-300 pt-3 pb-3 px-4 mt-auto space-y-2">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Subtotal</span>
-          <span className="font-medium">₱{subtotal.toFixed(2)}</span>
-        </div>
-
         {/* Fees Link */}
         <button
           onClick={() => setIsFeesModalOpen(true)}
@@ -153,6 +148,11 @@ export function Cart({
         >
           Configure Fees
         </button>
+
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-600">Subtotal</span>
+          <span className="font-medium">₱{subtotal.toFixed(2)}</span>
+        </div>
 
         {/* Conditional Fee Rows - Only show if non-zero */}
         {orderDiscount > 0 && (
