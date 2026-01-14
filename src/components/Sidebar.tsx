@@ -183,9 +183,14 @@ export function Sidebar() {
                   {userInitial ?? "U"}
                 </div>
                 {isExpanded && (
-                  <span className="text-sm font-medium truncate">
-                    {userName}
-                  </span>
+                  <div className="flex flex-col text-left">
+                    <span className="text-sm font-medium truncate">
+                      {userName}
+                    </span>
+                    <span className="text-xs truncate font-light ">
+                      {user?.roleDetails?.name || "User"}
+                    </span>
+                  </div>
                 )}
               </button>
             )}
