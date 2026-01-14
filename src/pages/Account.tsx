@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AxiosError } from "axios";
 import { useAuthStore } from "@/store/authStore";
-import { getAccountData } from "@/api/accountApi";
-import type { AccountData } from "@/api/accountApi";
 import {
   User,
   Mail,
@@ -16,6 +14,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { logout } from "@/api/authApi";
 import { useNavigate } from "react-router-dom";
+import { AccountData, getAccountData } from "@/api/accountApi";
 
 interface StatCard {
   icon: React.ReactNode;
@@ -31,8 +30,13 @@ export function AccountPage() {
   const [accountData, setAccountData] = useState<AccountData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const accountDataFetched = useRef(false);
 
   useEffect(() => {
+    // Prevent duplicate calls in React StrictMode
+    if (accountDataFetched.current) return;
+    accountDataFetched.current = true;
+
     const fetchAccountData = async () => {
       try {
         setLoading(true);
@@ -58,7 +62,7 @@ export function AccountPage() {
     };
 
     fetchAccountData();
-  }, []);
+  }, [clearUser, navigate]);
 
   const handleLogout = async () => {
     try {
