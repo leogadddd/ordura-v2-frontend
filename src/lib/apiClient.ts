@@ -16,6 +16,14 @@ export const apiClient: AxiosInstance = axios.create({
   withCredentials: true, // Enable cookies
 });
 
+// Flag to prevent multiple redirects
+let isRedirectingToLogin = false;
+
+// Function to reset redirect flag (call this on successful login)
+export const resetRedirectFlag = () => {
+  isRedirectingToLogin = false;
+};
+
 // Response interceptor - Handle token refresh
 apiClient.interceptors.response.use(
   (response: any) => response,
@@ -54,8 +62,11 @@ apiClient.interceptors.response.use(
         // Retry original request
         return apiClient(originalRequest);
       } catch (refreshError) {
-        // Refresh failed - redirect to login
-        window.location.href = "/login";
+        // Refresh failed - redirect to login (only once)
+        if (!isRedirectingToLogin && window.location.pathname !== "/login") {
+          isRedirectingToLogin = true;
+          window.location.href = "/login";
+        }
         return Promise.reject(refreshError);
       }
     }

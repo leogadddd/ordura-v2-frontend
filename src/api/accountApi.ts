@@ -11,13 +11,19 @@ export interface UserStats {
   lastLoginDate?: string;
 }
 
+export interface RoleDetails {
+  id: string;
+  name: string;
+  permissions: any[]; // JSON field for permissions
+}
+
 export interface AccountInfo {
   id: string;
   email: string;
   username: string;
   firstName?: string;
   lastName?: string;
-  role: string;
+  roleDetails?: RoleDetails;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

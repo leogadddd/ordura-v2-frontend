@@ -254,7 +254,7 @@ export function POSPage() {
                   className={`px-6 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-colors shrink-0 ${
                     selectedCategory === category
                       ? "bg-primary text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      : "bg-gray-200 text-gray-800 hover:bg-gray-300"
                   }`}
                 >
                   {category}

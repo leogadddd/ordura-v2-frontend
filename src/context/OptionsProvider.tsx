@@ -9,14 +9,18 @@ import {
   getFulfillmentTypes,
   type FulfillmentTypeOption,
 } from "@/api/optionsApi";
+import { getRoles, type Role } from "@/api/authApi";
 
 interface OptionsContextValue {
   fulfillmentTypes: FulfillmentTypeOption[] | null;
+  roles: Role[] | null;
   isLoadingFulfillmentTypes: boolean;
+  isLoadingRoles: boolean;
   refreshFulfillmentTypes: (opts?: {
     includeInactive?: boolean;
     force?: boolean;
   }) => Promise<FulfillmentTypeOption[]>;
+  refreshRoles: (opts?: { force?: boolean }) => Promise<Role[]>;
 }
 
 const OptionsContext = createContext<OptionsContextValue | undefined>(
@@ -29,9 +33,14 @@ export const OptionsProvider: React.FC<{ children: React.ReactNode }> = ({
   const [fulfillmentTypes, setFulfillmentTypes] = useState<
     FulfillmentTypeOption[] | null
   >(null);
+  const [roles, setRoles] = useState<Role[] | null>(null);
   const [isLoadingFulfillmentTypes, setIsLoadingFulfillmentTypes] =
     useState(false);
-  const inflight = useRef<Promise<FulfillmentTypeOption[]> | null>(null);
+  const [isLoadingRoles, setIsLoadingRoles] = useState(false);
+  const fulfillmentInflight = useRef<Promise<FulfillmentTypeOption[]> | null>(
+    null
+  );
+  const rolesInflight = useRef<Promise<Role[]> | null>(null);
 
   const refreshFulfillmentTypes = async ({
     includeInactive = false,
@@ -40,7 +49,8 @@ export const OptionsProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!force && fulfillmentTypes && !includeInactive) {
       return fulfillmentTypes;
     }
-    if (inflight.current && !force) return inflight.current;
+    if (fulfillmentInflight.current && !force)
+      return fulfillmentInflight.current;
 
     setIsLoadingFulfillmentTypes(true);
     const req = getFulfillmentTypes(includeInactive)
@@ -51,20 +61,45 @@ export const OptionsProvider: React.FC<{ children: React.ReactNode }> = ({
       })
       .finally(() => {
         setIsLoadingFulfillmentTypes(false);
-        inflight.current = null;
+        fulfillmentInflight.current = null;
       });
 
-    inflight.current = req;
+    fulfillmentInflight.current = req;
+    return req;
+  };
+
+  const refreshRoles = async ({ force = false }: { force?: boolean } = {}) => {
+    if (!force && roles) {
+      return roles;
+    }
+    if (rolesInflight.current && !force) return rolesInflight.current;
+
+    setIsLoadingRoles(true);
+    const req = getRoles()
+      .then((res) => {
+        const data = res.data || [];
+        setRoles(data);
+        return data;
+      })
+      .finally(() => {
+        setIsLoadingRoles(false);
+        rolesInflight.current = null;
+      });
+
+    rolesInflight.current = req;
     return req;
   };
 
   const value = useMemo(
     () => ({
       fulfillmentTypes,
+      roles,
       isLoadingFulfillmentTypes,
+      isLoadingRoles,
       refreshFulfillmentTypes,
+      refreshRoles,
     }),
-    [fulfillmentTypes, isLoadingFulfillmentTypes]
+    [fulfillmentTypes, roles, isLoadingFulfillmentTypes, isLoadingRoles]
   );
 
   return (

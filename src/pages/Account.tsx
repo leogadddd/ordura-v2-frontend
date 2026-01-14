@@ -96,7 +96,7 @@ export function AccountPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 p-6">
+      <div className="h-full flex flex-col p-6 overflow-y-auto">
         <div className="animate-pulse space-y-4">
           <div className="h-24 bg-gray-200 rounded-lg"></div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -146,9 +146,9 @@ export function AccountPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="h-full flex flex-col p-6 overflow-y-auto">
       {/* Header */}
-      <header className="flex items-center justify-between">
+      <header className="flex items-center justify-between mb-6 shrink-0">
         <div>
           <h1 className="text-3xl font-semibold text-primary">Account</h1>
           <p className="text-gray-600">
@@ -167,190 +167,194 @@ export function AccountPage() {
         </div>
       )}
 
-      {/* Profile Card */}
-      <div className="bg-linear-to-r from-primary to-primary-dark rounded-lg p-6 text-white shadow-lg">
-        <div className="flex items-center gap-6">
-          <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center text-2xl font-bold border-2 border-white/30">
-            {getUserInitials()}
-          </div>
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold">{getUserDisplayName()}</h2>
-            <p className="text-white/80 capitalize text-sm">{user?.role}</p>
-            <p className="text-white/70 text-sm mt-1">{user?.email}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-white/70">Member since</p>
-            <p className="font-semibold">
-              {accountData?.user.createdAt
-                ? formatDate(accountData.user.createdAt)
-                : "N/A"}
-            </p>
+      <div className="space-y-6">
+        {/* Profile Card */}
+        <div className="bg-linear-to-r from-primary to-primary-dark rounded-lg p-6 text-white shadow-lg">
+          <div className="flex items-center gap-6">
+            <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center text-2xl font-bold border-2 border-white/30">
+              {getUserInitials()}
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold">{getUserDisplayName()}</h2>
+              <p className="text-white/80 capitalize text-sm">
+                {user?.roleDetails?.name || "User"}
+              </p>
+              <p className="text-white/70 text-sm mt-1">{user?.email}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-white/70">Member since</p>
+              <p className="font-semibold">
+                {accountData?.user.createdAt
+                  ? formatDate(accountData.user.createdAt)
+                  : "N/A"}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Analytics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, index) => (
-          <div
-            key={index}
-            className={`${stat.color} border rounded-lg p-6 transition-all hover:shadow-lg`}
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">
-                  {stat.label}
-                </p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">
-                  {stat.value}
-                </p>
+        {/* Analytics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {stats.map((stat, index) => (
+            <div
+              key={index}
+              className={`${stat.color} border rounded-lg p-6 transition-all hover:shadow-lg`}
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-gray-600 text-sm font-medium">
+                    {stat.label}
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 mt-2">
+                    {stat.value}
+                  </p>
+                </div>
+                <div className="text-gray-400">{stat.icon}</div>
               </div>
-              <div className="text-gray-400">{stat.icon}</div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      {/* Account Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Personal Information */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Personal Information
-          </h3>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
-              <User className="w-5 h-5 text-gray-400" />
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">
-                  Full Name
-                </p>
-                <p className="text-sm font-medium text-gray-900">
-                  {getUserDisplayName()}
-                </p>
+        {/* Account Details */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Personal Information */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Personal Information
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
+                <User className="w-5 h-5 text-gray-400" />
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide">
+                    Full Name
+                  </p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {getUserDisplayName()}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
-              <Mail className="w-5 h-5 text-gray-400" />
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">
-                  Email Address
-                </p>
-                <p className="text-sm font-medium text-gray-900">
-                  {user?.email}
-                </p>
+              <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
+                <Mail className="w-5 h-5 text-gray-400" />
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide">
+                    Email Address
+                  </p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {user?.email}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
-              <User className="w-5 h-5 text-gray-400" />
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">
-                  Username
-                </p>
-                <p className="text-sm font-medium text-gray-900">
-                  {user?.username}
-                </p>
+              <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
+                <User className="w-5 h-5 text-gray-400" />
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide">
+                    Username
+                  </p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {user?.username}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <User className="w-5 h-5 text-gray-400" />
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">
-                  Role
-                </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full capitalize">
-                    {user?.role}
-                  </span>
+              <div className="flex items-center gap-3">
+                <User className="w-5 h-5 text-gray-400" />
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide">
+                    Role
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full capitalize">
+                      {user?.roleDetails?.name || "User"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Account Statistics */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Account Statistics
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+                <span className="text-sm text-gray-600 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Account Created
+                </span>
+                <span className="font-medium text-gray-900">
+                  {accountData?.user.createdAt
+                    ? formatDate(accountData.user.createdAt)
+                    : "N/A"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+                <span className="text-sm text-gray-600 flex items-center gap-2">
+                  <ShoppingCart className="w-4 h-4" />
+                  Total Orders
+                </span>
+                <span className="font-medium text-gray-900">
+                  {accountData?.stats.totalOrders || 0}
+                </span>
+              </div>
+              <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+                <span className="text-sm text-gray-600 flex items-center gap-2">
+                  <Package className="w-4 h-4" />
+                  Completed Orders
+                </span>
+                <span className="font-medium text-gray-900">
+                  {accountData?.stats.completedOrders || 0}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
+                  Last Login
+                </span>
+                <span className="font-medium text-gray-900">
+                  {accountData?.user.lastLogin
+                    ? formatDate(accountData.user.lastLogin)
+                    : "N/A"}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Account Statistics */}
+        {/* Account Status */}
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Account Statistics
+            Account Status
           </h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-200">
-              <span className="text-sm text-gray-600 flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Account Created
-              </span>
-              <span className="font-medium text-gray-900">
-                {accountData?.user.createdAt
-                  ? formatDate(accountData.user.createdAt)
-                  : "N/A"}
-              </span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <div>
+                <p className="text-sm text-gray-600">Account Status</p>
+                <p className="font-semibold text-gray-900">
+                  {accountData?.user.isActive ? "Active" : "Inactive"}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center justify-between pb-4 border-b border-gray-200">
-              <span className="text-sm text-gray-600 flex items-center gap-2">
-                <ShoppingCart className="w-4 h-4" />
-                Total Orders
-              </span>
-              <span className="font-medium text-gray-900">
-                {accountData?.stats.totalOrders || 0}
-              </span>
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <div>
+                <p className="text-sm text-gray-600">Last Updated</p>
+                <p className="font-semibold text-gray-900">
+                  {accountData?.user.updatedAt
+                    ? formatDate(accountData.user.updatedAt)
+                    : "N/A"}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center justify-between pb-4 border-b border-gray-200">
-              <span className="text-sm text-gray-600 flex items-center gap-2">
-                <Package className="w-4 h-4" />
-                Completed Orders
-              </span>
-              <span className="font-medium text-gray-900">
-                {accountData?.stats.completedOrders || 0}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" />
-                Last Login
-              </span>
-              <span className="font-medium text-gray-900">
-                {accountData?.user.lastLogin
-                  ? formatDate(accountData.user.lastLogin)
-                  : "N/A"}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Account Status */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Account Status
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <div>
-              <p className="text-sm text-gray-600">Account Status</p>
-              <p className="font-semibold text-gray-900">
-                {accountData?.user.isActive ? "Active" : "Inactive"}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-            <div>
-              <p className="text-sm text-gray-600">Last Updated</p>
-              <p className="font-semibold text-gray-900">
-                {accountData?.user.updatedAt
-                  ? formatDate(accountData.user.updatedAt)
-                  : "N/A"}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-            <div>
-              <p className="text-sm text-gray-600">Account ID</p>
-              <p className="font-semibold text-gray-900 text-xs truncate">
-                {accountData?.user.id}
-              </p>
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+              <div>
+                <p className="text-sm text-gray-600">Account ID</p>
+                <p className="font-semibold text-gray-900 text-xs truncate">
+                  {accountData?.user.id}
+                </p>
+              </div>
             </div>
           </div>
         </div>

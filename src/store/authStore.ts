@@ -7,7 +7,13 @@ export interface User {
   username: string;
   firstName?: string;
   lastName?: string;
-  role: string;
+  roleId?: string;
+  roleDetails?: {
+    id: string;
+    name: string;
+    description?: string;
+    permissions?: any;
+  };
 }
 
 interface AuthState {

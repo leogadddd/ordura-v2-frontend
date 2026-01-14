@@ -5,6 +5,7 @@ import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { login } from "../api/authApi";
 import { useAuthStore } from "../store/authStore";
+import { resetRedirectFlag } from "../lib/apiClient";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
@@ -29,6 +30,9 @@ export function LoginPage() {
       if (response.data?.user) {
         setUser(response.data.user);
       }
+
+      // Reset redirect flag on successful login
+      resetRedirectFlag();
 
       // Redirect to dashboard on success
       navigate("/dashboard", { replace: true });

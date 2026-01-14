@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/Login";
 import RegisterPage from "./pages/Register";
 import DashboardPage from "./pages/Dashboard";
@@ -10,39 +10,95 @@ import SettingsPage from "./pages/Settings";
 import AccountPage from "./pages/Account";
 import AppLayout from "./layouts/AppLayout";
 import { useAuthStore } from "./store/authStore";
-import { getCurrentUser } from "./api/authApi";
+import { getCurrentUser, checkInitStatus } from "./api/authApi";
 
 function App() {
   const setUser = useAuthStore((state) => state.setUser);
   const clearUser = useAuthStore((state) => state.clearUser);
-  const location = useLocation();
+  const [hasAdmin, setHasAdmin] = useState<boolean | null>(null);
+  const [initLoading, setInitLoading] = useState(true);
+  const initChecked = useRef(false);
 
   useEffect(() => {
-    // Fetch current user on mount and when navigating to protected routes
-    const fetchUser = async () => {
-      // Skip if on public routes
-      if (location.pathname === "/login" || location.pathname === "/register") {
-        return;
-      }
+    // Check initialization status on app start
+    // Prevent duplicate calls in React StrictMode
+    if (initChecked.current) return;
+    initChecked.current = true;
 
+    const checkInit = async () => {
+      try {
+        const initStatus = await checkInitStatus();
+        setHasAdmin(initStatus.data?.hasAdmin ?? true);
+      } catch (error) {
+        console.error("Failed to check init status:", error);
+        // Default to having admin if check fails
+        setHasAdmin(true);
+      } finally {
+        setInitLoading(false);
+      }
+    };
+
+    checkInit();
+  }, []);
+
+  const userFetched = useRef(false);
+
+  useEffect(() => {
+    // Fetch current user on mount (only when admin exists)
+    // Prevent duplicate calls in React StrictMode
+    if (userFetched.current || initLoading || !hasAdmin) {
+      return;
+    }
+    userFetched.current = true;
+
+    const fetchUser = async () => {
       try {
         const response = await getCurrentUser();
         if (response.data) {
           setUser(response.data);
         }
       } catch (error) {
-        // If fetching user fails, clear user and they'll be redirected
+        // If fetching user fails, clear user
         clearUser();
       }
     };
 
     fetchUser();
-  }, [location.pathname, setUser, clearUser]);
+  }, [hasAdmin, initLoading, setUser, clearUser]);
 
+  // Show loading while checking initialization
+  if (initLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Initializing...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If no admin exists, only show register page
+  if (!hasAdmin) {
+    return (
+      <Routes>
+        <Route
+          path="/register"
+          element={<RegisterPage isInitialSetup={true} />}
+        />
+        <Route path="*" element={<Navigate to="/register" replace />} />
+      </Routes>
+    );
+  }
+
+  // Normal app flow when admin exists
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+      <Route
+        path="/register"
+        element={<RegisterPage isInitialSetup={false} />}
+      />
       <Route
         path="/dashboard"
         element={

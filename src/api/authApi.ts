@@ -12,6 +12,14 @@ export interface RegisterData {
   password: string;
   firstName?: string;
   lastName?: string;
+  roleId?: string;
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  description?: string;
+  permissions?: any;
 }
 
 export interface User {
@@ -20,7 +28,13 @@ export interface User {
   username: string;
   firstName?: string;
   lastName?: string;
-  role: string;
+  roleId?: string;
+  roleDetails?: {
+    id: string;
+    name: string;
+    description?: string;
+    permissions?: any;
+  };
 }
 
 export type AuthResponse = ApiResponse<{ user: User }>;
@@ -59,5 +73,19 @@ export const refreshToken = async (): Promise<AuthResponse> => {
 // Get current user
 export const getCurrentUser = async () => {
   const response = await apiClient.get(`${AUTH_API_BASE}/me`);
+  return response.data;
+};
+
+// Get roles
+export const getRoles = async (): Promise<ApiResponse<Role[]>> => {
+  const response = await apiClient.get("/options/roles");
+  return response.data;
+};
+
+// Check init status
+export const checkInitStatus = async (): Promise<
+  ApiResponse<{ hasAdmin: boolean }>
+> => {
+  const response = await apiClient.get("/auth/init");
   return response.data;
 };

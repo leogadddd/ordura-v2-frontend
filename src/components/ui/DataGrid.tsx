@@ -53,7 +53,10 @@ export function DataGrid<T>({
   );
 
   return (
-    <div className={`relative ${className}`} style={{ height }}>
+    <div
+      className={`relative rounded-2xl overflow-hidden ${className}`}
+      style={{ height }}
+    >
       {loading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
           <span className="text-sm text-gray-600">Loading...</span>
@@ -76,6 +79,7 @@ export function DataGrid<T>({
                 }
               : undefined
           }
+          className="rounded-2xl overflow-hidden"
         />
       </div>
     </div>

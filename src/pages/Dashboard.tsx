@@ -40,7 +40,7 @@ export function DashboardPage() {
               {getUserDisplayName()}
             </p>
             <p className="text-xs text-gray-500 capitalize">
-              {user?.role || "User"}
+              {user?.roleDetails?.name || "User"}
             </p>
           </div>
           <Button onClick={handleLogout} variant="secondary" size="sm">

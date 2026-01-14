@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { register } from "@/api/authApi";
 import { useAuthStore } from "@/store/authStore";
+import { useOptions } from "@/context/OptionsProvider";
+import { resetRedirectFlag } from "@/lib/apiClient";
 
-export function RegisterPage() {
+export function RegisterPage({ isInitialSetup }: { isInitialSetup?: boolean }) {
   const [formData, setFormData] = useState({
     email: "",
     username: "",
@@ -13,11 +16,32 @@ export function RegisterPage() {
     confirmPassword: "",
     firstName: "",
     lastName: "",
+    roleId: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const setUser = useAuthStore((state) => state.setUser);
+  const { roles, isLoadingRoles, refreshRoles } = useOptions();
+
+  useEffect(() => {
+    // Fetch roles if not already loaded
+    if (!roles && !isLoadingRoles) {
+      refreshRoles();
+    }
+  }, [roles, isLoadingRoles, refreshRoles]);
+
+  // Set default admin role for initial setup
+  useEffect(() => {
+    if (isInitialSetup && roles && roles.length > 0) {
+      const adminRole = roles.find(
+        (role) => role.name.toLowerCase() === "administrator"
+      );
+      if (adminRole) {
+        setFormData((prev) => ({ ...prev, roleId: adminRole.id }));
+      }
+    }
+  }, [isInitialSetup, roles]);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -50,12 +74,16 @@ export function RegisterPage() {
         password: formData.password,
         firstName: formData.firstName || undefined,
         lastName: formData.lastName || undefined,
+        roleId: formData.roleId || undefined,
       });
 
       // Save user to store
       if (response.data?.user) {
         setUser(response.data.user);
       }
+
+      // Reset redirect flag on successful registration
+      resetRedirectFlag();
 
       // Redirect to dashboard on success
       navigate("/dashboard", { replace: true });
@@ -73,7 +101,11 @@ export function RegisterPage() {
       <div className="w-full max-w-xl">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-primary mb-2">Ordura POS</h1>
-          <p className="text-gray-600">Create your account</p>
+          <p className="text-gray-600">
+            {isInitialSetup
+              ? "Create the first admin account"
+              : "Create your account"}
+          </p>
         </div>
 
         <div className="p-8">
@@ -96,6 +128,20 @@ export function RegisterPage() {
                 placeholder="Doe"
               />
             </div>
+
+            <Select
+              label="Role"
+              placeholder={
+                isLoadingRoles ? "Loading roles..." : "Select a role"
+              }
+              value={formData.roleId}
+              onChange={(e) => handleChange("roleId", e.target.value as string)}
+              options={(roles || []).map((role) => ({
+                label: role.name,
+                value: role.id,
+              }))}
+              disabled={isLoadingRoles || isInitialSetup}
+            />
 
             <Input
               id="email"

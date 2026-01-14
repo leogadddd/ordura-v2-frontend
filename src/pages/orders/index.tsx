@@ -85,7 +85,7 @@ export function OrdersPage() {
       </header>
 
       <div
-        className={`flex-1 bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col transition-opacity ${
+        className={`flex-1 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col transition-opacity ${
           isRefreshing ? "opacity-50" : "opacity-100"
         }`}
       >
