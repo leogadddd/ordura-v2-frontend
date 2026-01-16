@@ -19,7 +19,7 @@ export interface Role {
   id: string;
   name: string;
   description?: string;
-  permissions?: any;
+  permissions?: string[] | Record<string, Record<string, boolean>>;
 }
 
 export interface User {
@@ -33,7 +33,7 @@ export interface User {
     id: string;
     name: string;
     description?: string;
-    permissions?: any;
+    permissions?: string[] | Record<string, Record<string, boolean>>;
   };
 }
 

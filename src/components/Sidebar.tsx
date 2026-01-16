@@ -16,11 +16,17 @@ import {
 import { Popover } from "@/components/ui/Popover";
 import { useAuthStore } from "@/store/authStore";
 import { logout } from "@/api/authApi";
+import { generatePermissionsManifest } from "@/lib/permission/permissions.manifest";
 
 const navItems = [
   { label: "Dashboard", to: "/dashboard", icon: HomeIcon },
   { label: "Point Of Sale", to: "/pos", icon: MonitorIcon },
-  { label: "Products", to: "/products", icon: PackageIcon },
+  {
+    label: "Products",
+    to: "/products",
+    icon: PackageIcon,
+    permission: generatePermissionsManifest().PRODUCTS.VIEW,
+  },
   { label: "Orders", to: "/orders", icon: ScrollIcon },
   // { label: "Inventory", to: "/inventory", icon: Squares2X2Icon },
   // { label: "Reports", to: "/reports", icon: DocumentChartBarIcon },
@@ -34,8 +40,13 @@ const bottomNavItems = [
 export function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
   const user = useAuthStore((state) => state.user);
+  const hasPermission = useAuthStore((state) => state.hasPermission);
   const clearUser = useAuthStore((state) => state.clearUser);
   const navigate = useNavigate();
+
+  const filteredNavItems = navItems.filter(
+    (item) => !item.permission || hasPermission(item.permission)
+  );
 
   const handleLogout = async () => {
     try {
@@ -110,7 +121,7 @@ export function Sidebar() {
         </div>
 
         <nav className="space-y-1 flex-1">
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const Icon = item.icon;
             return (
               <NavLink
