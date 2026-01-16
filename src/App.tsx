@@ -8,6 +8,7 @@ import ProductsPage from "./pages/products";
 import OrdersPage from "./pages/orders";
 import SettingsPage from "./pages/Settings";
 import AccountPage from "./pages/Account";
+import UsersPage from "./pages/Users";
 import AppLayout from "./layouts/AppLayout";
 import { useAuthStore } from "./store/authStore";
 import { getCurrentUser, checkInitStatus } from "./api/authApi";
@@ -120,6 +121,14 @@ function App() {
         element={
           <AppLayout>
             <ProductsPage />
+          </AppLayout>
+        }
+      />
+      <Route
+        path="/users"
+        element={
+          <AppLayout>
+            <UsersPage />
           </AppLayout>
         }
       />

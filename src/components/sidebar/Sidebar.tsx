@@ -6,36 +6,10 @@ import {
   UserIcon,
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
-import {
-  HomeIcon,
-  MonitorIcon,
-  PackageIcon,
-  ScrollIcon,
-  SettingsIcon,
-} from "lucide-react";
 import { Popover } from "@/components/ui/Popover";
 import { useAuthStore } from "@/store/authStore";
 import { logout } from "@/api/authApi";
-import { generatePermissionsManifest } from "@/lib/permission/permissions.manifest";
-
-const navItems = [
-  { label: "Dashboard", to: "/dashboard", icon: HomeIcon },
-  { label: "Point Of Sale", to: "/pos", icon: MonitorIcon },
-  {
-    label: "Products",
-    to: "/products",
-    icon: PackageIcon,
-    permission: generatePermissionsManifest().PRODUCTS.VIEW,
-  },
-  { label: "Orders", to: "/orders", icon: ScrollIcon },
-  // { label: "Inventory", to: "/inventory", icon: Squares2X2Icon },
-  // { label: "Reports", to: "/reports", icon: DocumentChartBarIcon },
-  // { label: "Register", to: "/register", icon: UserPlusIcon },
-];
-
-const bottomNavItems = [
-  { label: "Settings", to: "/settings", icon: SettingsIcon },
-];
+import { items } from "./nav.items";
 
 export function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -44,7 +18,11 @@ export function Sidebar() {
   const clearUser = useAuthStore((state) => state.clearUser);
   const navigate = useNavigate();
 
-  const filteredNavItems = navItems.filter(
+  const filteredTopItems = items.top.filter(
+    (item) => !item.permission || hasPermission(item.permission)
+  );
+
+  const filteredBottomItems = items.bottom.filter(
     (item) => !item.permission || hasPermission(item.permission)
   );
 
@@ -121,7 +99,7 @@ export function Sidebar() {
         </div>
 
         <nav className="space-y-1 flex-1">
-          {filteredNavItems.map((item) => {
+          {filteredTopItems.map((item) => {
             const Icon = item.icon;
             return (
               <NavLink
@@ -148,7 +126,7 @@ export function Sidebar() {
         </nav>
 
         <nav className="space-y-1 mt-auto">
-          {bottomNavItems.map((item) => {
+          {filteredBottomItems.map((item) => {
             const Icon = item.icon;
             return (
               <NavLink

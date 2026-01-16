@@ -1,6 +1,6 @@
 import { PropsWithChildren } from "react";
 import { TopBar } from "@/components/TopBar";
-import { Sidebar } from "@/components/Sidebar";
+import { Sidebar } from "@/components/sidebar/Sidebar";
 
 export function AppLayout({ children }: PropsWithChildren) {
   return (
