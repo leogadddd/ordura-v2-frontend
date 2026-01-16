@@ -37,7 +37,11 @@ export function LoginPage() {
       // Redirect to dashboard on success
       navigate("/dashboard", { replace: true });
     } catch (err: any) {
-      setError(err.response?.data?.error || "Login failed. Please try again.");
+      setError(
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          "Login failed. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -53,6 +57,11 @@ export function LoginPage() {
 
         <div className="p-8">
           <form onSubmit={handleLogin} className="space-y-6">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+                {error}
+              </div>
+            )}
             <Input
               id="email"
               label="Username or Email"
@@ -88,12 +97,6 @@ export function LoginPage() {
                 Forgot password?
               </button>
             </div>
-
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
-                {error}
-              </div>
-            )}
 
             <Button
               type="submit"
