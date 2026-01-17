@@ -204,6 +204,9 @@ export function POSPage() {
           (sum, item) => sum + item.price * item.quantity,
           0
         )}
+        orderDiscount={orderDiscount}
+        serviceFee={serviceFee}
+        deliveryFee={deliveryFee}
         onConfirmPayment={handleConfirmPayment}
         isLoading={isSubmitting}
       />

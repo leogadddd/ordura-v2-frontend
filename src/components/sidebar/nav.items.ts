@@ -14,6 +14,8 @@ interface NavItem {
   to: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   permission?: string;
+  /** Optional grouping label for this item. When set, Sidebar will render items grouped by section. */
+  section?: string;
 }
 
 interface NavigationItems {
@@ -23,44 +25,52 @@ interface NavigationItems {
 
 const navigationItems = () => {
   const top: NavItem[] = [
+    // NAVIGATION
     {
       label: "Dashboard",
       to: "/dashboard",
       icon: HomeIcon,
+      section: "Navigation",
     },
     {
       label: "Point Of Sale",
       to: "/pos",
       icon: MonitorIcon,
       permission: makePermission("POS", "VIEW"),
+      section: "Navigation",
     },
     {
       label: "Products",
       to: "/products",
       icon: PackageIcon,
       permission: makePermission("PRODUCTS", "MANAGE"),
+      section: "Navigation",
     },
     {
       label: "Orders",
       to: "/orders",
       icon: ScrollIcon,
       permission: makePermission("ORDERS", "VIEW"),
+      section: "Navigation",
     },
-  ];
-
-  const bottom: NavItem[] = [
+    // USER MANAGEMENT
     {
       label: "Users",
       to: "/users",
       icon: Users,
       permission: makePermission("USERS", "MANAGE"),
+      section: "User Management",
     },
     {
       label: "Roles",
       to: "/roles",
       icon: HardHat,
       permission: makePermission("ROLES", "MANAGE"),
+      section: "User Management",
     },
+  ];
+
+  const bottom: NavItem[] = [
     {
       label: "Settings",
       to: "/settings",

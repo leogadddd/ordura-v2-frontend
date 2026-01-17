@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 
@@ -124,6 +124,11 @@ export function FeesConfigModal({
     onClose();
   };
 
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    handleApply();
+  };
+
   const handleReset = () => {
     setLocalOrderDiscount(0);
     setLocalServiceFee(0);
@@ -140,7 +145,7 @@ export function FeesConfigModal({
       title="Configure Fees"
       maxWidth="max-w-sm"
     >
-      <div className="space-y-4 p-4">
+      <form onSubmit={handleSubmit} className="space-y-4 p-4">
         {/* Order Discount */}
         <div>
           <div className="flex items-center justify-between mb-2">
@@ -291,6 +296,7 @@ export function FeesConfigModal({
         {/* Actions */}
         <div className="flex gap-2 pt-2">
           <Button
+            type="button"
             onClick={handleReset}
             variant="secondary"
             size="md"
@@ -298,16 +304,11 @@ export function FeesConfigModal({
           >
             Reset
           </Button>
-          <Button
-            onClick={handleApply}
-            variant="primary"
-            size="md"
-            className="flex-1"
-          >
+          <Button type="submit" variant="primary" size="md" className="flex-1">
             Apply
           </Button>
         </div>
-      </div>
+      </form>
     </Modal>
   );
 }

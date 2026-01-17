@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { MinusIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -42,6 +42,36 @@ export function Cart({
 }: CartProps) {
   const [itemToRemove, setItemToRemove] = useState<string | null>(null);
   const [isFeesModalOpen, setIsFeesModalOpen] = useState(false);
+  const [highlightedItemId, setHighlightedItemId] = useState<string | null>(
+    null
+  );
+  const prevItemsRef = useRef<CartItem[]>(items);
+  const highlightTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const prevItems = prevItemsRef.current;
+    if (items.length > prevItems.length) {
+      const prevIds = new Set(prevItems.map((i) => i.id));
+      const newItem = items.find((i) => !prevIds.has(i.id));
+      if (newItem) {
+        setHighlightedItemId(newItem.id);
+        if (highlightTimeoutRef.current) {
+          window.clearTimeout(highlightTimeoutRef.current);
+        }
+        highlightTimeoutRef.current = window.setTimeout(() => {
+          setHighlightedItemId(null);
+          highlightTimeoutRef.current = null;
+        }, 3000);
+      }
+    }
+    prevItemsRef.current = items;
+    return () => {
+      if (highlightTimeoutRef.current) {
+        window.clearTimeout(highlightTimeoutRef.current);
+        highlightTimeoutRef.current = null;
+      }
+    };
+  }, [items]);
 
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -83,7 +113,9 @@ export function Cart({
               {items.map((item) => (
                 <tr
                   key={item.id}
-                  className="border-b border-gray-200 cursor-pointer hover:bg-gray-50"
+                  className={`border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors ${
+                    item.id === highlightedItemId ? "bg-yellow-100" : ""
+                  }`}
                   onClick={() => onEditItem(item)}
                 >
                   <td className="p-3">

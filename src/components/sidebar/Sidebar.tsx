@@ -37,6 +37,21 @@ export function Sidebar() {
     }
   };
 
+  // Group top items by section while preserving order of sections and items
+  const groupedTopItems = (() => {
+    const order: (string | null)[] = [];
+    const map = new Map<string | null, typeof filteredTopItems>();
+    for (const item of filteredTopItems) {
+      const key = item.section ?? null;
+      if (!map.has(key)) {
+        map.set(key, []);
+        order.push(key);
+      }
+      map.get(key)!.push(item);
+    }
+    return order.map((k) => ({ section: k, items: map.get(k)! }));
+  })();
+
   // Generate a background color based on the user's first letter
   const getAvatarColor = (name: string | null) => {
     if (!name) return "bg-primary"; // Stable accent color when user not yet loaded
@@ -99,30 +114,65 @@ export function Sidebar() {
         </div>
 
         <nav className="space-y-1 flex-1">
-          {filteredTopItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  `flex items-center gap-2.5 rounded-xl h-12 ${
-                    isExpanded ? "px-3" : "w-11 px-3"
-                  } ${
-                    isActive
-                      ? "bg-primary text-white"
-                      : "text-gray-600 hover:bg-primary-pale"
-                  }`
-                }
-                title={!isExpanded ? item.label : undefined}
-              >
-                <Icon className="w-5 h-5" />
-                {isExpanded && (
-                  <span className="text-sm font-medium">{item.label}</span>
-                )}
-              </NavLink>
-            );
-          })}
+          {/* When expanded, show section headers and grouped items. When collapsed, show a flat list so headers don't take space. */}
+          {isExpanded
+            ? groupedTopItems.map((group) => (
+                <div key={group.section ?? "__default"}>
+                  {group.section && (
+                    <div className="px-3 pt-2 pb-1 text-xs text-gray-500 uppercase font-semibold tracking-wide">
+                      {group.section}
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    {group.items.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <NavLink
+                          key={item.to}
+                          to={item.to}
+                          className={({ isActive }) =>
+                            `flex items-center gap-2.5 rounded-xl h-12 px-3 ${
+                              isActive
+                                ? "bg-primary text-white"
+                                : "text-gray-600 hover:bg-primary-pale"
+                            }`
+                          }
+                          title={!isExpanded ? item.label : undefined}
+                        >
+                          <Icon className="w-5 h-5" />
+                          <span className="text-sm font-medium">
+                            {item.label}
+                          </span>
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))
+            : filteredTopItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 rounded-xl h-12 ${
+                        isExpanded ? "px-3" : "w-11 px-3"
+                      } ${
+                        isActive
+                          ? "bg-primary text-white"
+                          : "text-gray-600 hover:bg-primary-pale"
+                      }`
+                    }
+                    title={!isExpanded ? item.label : undefined}
+                  >
+                    <Icon className="w-5 h-5" />
+                    {isExpanded && (
+                      <span className="text-sm font-medium">{item.label}</span>
+                    )}
+                  </NavLink>
+                );
+              })}
         </nav>
 
         <nav className="space-y-1 mt-auto">

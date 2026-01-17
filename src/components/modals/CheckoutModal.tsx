@@ -15,6 +15,9 @@ interface CheckoutModalProps {
   onClose: () => void;
   cartItems: CartItem[];
   subtotal: number;
+  orderDiscount?: number;
+  serviceFee?: number;
+  deliveryFee?: number;
   onConfirmPayment: (payment: {
     method: string;
     amountReceived: number;
@@ -36,6 +39,9 @@ export function CheckoutModal({
   onClose,
   cartItems,
   subtotal,
+  orderDiscount = 0,
+  serviceFee = 0,
+  deliveryFee = 0,
   onConfirmPayment,
   isLoading = false,
 }: CheckoutModalProps) {
@@ -43,8 +49,10 @@ export function CheckoutModal({
   const [amountReceived, setAmountReceived] = useState("");
 
   // Calculate totals
-  const taxAmount = subtotal * TAX_RATE;
-  const totalAmount = subtotal + taxAmount;
+  const discountedSubtotal = subtotal - (orderDiscount || 0);
+  const taxAmount = discountedSubtotal * TAX_RATE;
+  const totalAmount =
+    discountedSubtotal + taxAmount + (serviceFee || 0) + (deliveryFee || 0);
   const changeDue = amountReceived
     ? Math.max(0, parseFloat(amountReceived) - totalAmount)
     : 0;
@@ -57,7 +65,7 @@ export function CheckoutModal({
       setAmountReceived(amountReceived.slice(0, -1));
     } else if (char === ".") {
       if (!amountReceived.includes(".")) {
-        setAmountReceived(amountReceived || "0") + char;
+        setAmountReceived((amountReceived || "0") + char);
       }
     } else if (char === "✓") {
       if (parseFloat(amountReceived || "0") >= totalAmount) {
@@ -129,6 +137,26 @@ export function CheckoutModal({
                 <span>Tax (12%)</span>
                 <span>₱{taxAmount.toFixed(2)}</span>
               </div>
+              {orderDiscount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-700">Order Discount</span>
+                  <span className="text-red-600">
+                    -₱{orderDiscount.toFixed(2)}
+                  </span>
+                </div>
+              )}
+              {serviceFee > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-700">Service Fee</span>
+                  <span>₱{serviceFee.toFixed(2)}</span>
+                </div>
+              )}
+              {deliveryFee > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-700">Delivery Fee</span>
+                  <span>₱{deliveryFee.toFixed(2)}</span>
+                </div>
+              )}
               <div className="border-t border-gray-300 pt-2 flex justify-between font-bold text-base text-primary">
                 <span>Total</span>
                 <span>₱{totalAmount.toFixed(2)}</span>
