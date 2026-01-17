@@ -160,7 +160,7 @@ export function Sidebar() {
                   toggle();
                 }}
                 className={`flex items-center gap-2.5 rounded-xl h-12 ${
-                  isExpanded ? "px-1.5 w-full" : "w-11 px-3 justify-center"
+                  isExpanded ? "px-1.25 w-full" : "w-11 px-3 justify-center"
                 } text-gray-600 hover:bg-primary-pale`}
                 title={!isExpanded ? "Account" : undefined}
               >

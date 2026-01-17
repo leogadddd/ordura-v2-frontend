@@ -76,24 +76,23 @@ export const checkIfCan = (
 export const checkIfCanView = (
   userPermissions: string[],
   module: string
-): boolean => checkIfCan(userPermissions, module, "view");
+): boolean => checkIfCan(userPermissions, module, "VIEW");
 
 export const checkIfCanCreate = (
   userPermissions: string[],
   module: string
-): boolean => checkIfCan(userPermissions, module, "create");
+): boolean => checkIfCan(userPermissions, module, "CREATE");
 
 export const checkIfCanEdit = (
   userPermissions: string[],
   module: string
-): boolean => checkIfCan(userPermissions, module, "edit");
-
+): boolean => checkIfCan(userPermissions, module, "EDIT");
 export const checkIfCanDelete = (
   userPermissions: string[],
   module: string
-): boolean => checkIfCan(userPermissions, module, "delete");
+): boolean => checkIfCan(userPermissions, module, "DELETE");
 
 export const checkIfCanManage = (
   userPermissions: string[],
   module: string
-): boolean => checkIfCan(userPermissions, module, "manage");
+): boolean => checkIfCan(userPermissions, module, "MANAGE");

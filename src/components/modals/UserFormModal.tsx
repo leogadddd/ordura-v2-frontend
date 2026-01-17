@@ -301,7 +301,7 @@ export function UserFormModal({
             }}
           />
 
-          <section className="flex gap-6 pt-6 border-t border-gray-200">
+          <section className="flex gap-6 pt-6 border-t border-gray-100">
             <div className="w-[30%]">
               <div className="flex items-center gap-2 mb-2">
                 <h3 className="text-lg font-semibold text-primary">Account</h3>
@@ -410,7 +410,7 @@ export function UserFormModal({
             </div>
           </section>
 
-          <section className="flex gap-6 pt-6 border-t border-gray-200">
+          <section className="flex gap-6 pt-6 border-t border-gray-100">
             <div className="w-[30%]">
               <div className="flex items-center gap-2 mb-2">
                 <h3 className="text-lg font-semibold text-primary">
@@ -483,11 +483,14 @@ export function UserFormModal({
                     if (perms.length === 0) return null;
                     const rolePerms = getRolePermissions();
                     return (
-                      <div key={m} className="border rounded p-3 bg-gray-50">
+                      <div
+                        key={m}
+                        className="rounded-xl p-4 bg-primary/10 shadow-sm"
+                      >
                         <div className="flex items-center justify-between mb-2">
-                          <strong className="text-sm">{m}</strong>
+                          <strong className="text-sm text-primary">{m}</strong>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-3">
                           {perms.map((p) => {
                             const state = userOverrides[p];
                             const roleHas = rolePerms.includes(p);
@@ -495,7 +498,7 @@ export function UserFormModal({
                             return (
                               <div
                                 key={p}
-                                className="flex items-center justify-between gap-4 p-2 rounded hover:bg-white"
+                                className="flex items-center justify-between gap-4 p-3 rounded-lg hover:bg-primary/20"
                               >
                                 <div className="text-sm text-gray-700">
                                   {p.split(":")[1]}
@@ -506,7 +509,7 @@ export function UserFormModal({
                                 <div className="flex items-center gap-2">
                                   <div className="flex items-center gap-2">
                                     {roleHas && (
-                                      <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
+                                      <span className="text-xs px-2 py-0.5 rounded bg-white text-primary">
                                         role
                                       </span>
                                     )}
@@ -566,7 +569,7 @@ export function UserFormModal({
             </div>
           </section>
         </div>
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 bg-white sticky pb-1 bottom-0">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 bg-white sticky pb-1 bottom-0">
           <Button onClick={onClose} variant="outline" disabled={isSaving}>
             Cancel
           </Button>

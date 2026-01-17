@@ -32,40 +32,40 @@ const navigationItems = () => {
       label: "Point Of Sale",
       to: "/pos",
       icon: MonitorIcon,
-      permission: makePermission("POS", "view"),
+      permission: makePermission("POS", "VIEW"),
     },
     {
       label: "Products",
       to: "/products",
       icon: PackageIcon,
-      permission: makePermission("PRODUCTS", "manage"),
-    },
-    {
-      label: "Users",
-      to: "/users",
-      icon: Users,
-      permission: makePermission("USERS", "manage"),
-    },
-    {
-      label: "Roles",
-      to: "/roles",
-      icon: HardHat,
-      permission: makePermission("ROLES", "manage"),
+      permission: makePermission("PRODUCTS", "MANAGE"),
     },
     {
       label: "Orders",
       to: "/orders",
       icon: ScrollIcon,
-      permission: makePermission("ORDERS", "view"),
+      permission: makePermission("ORDERS", "VIEW"),
     },
   ];
 
   const bottom: NavItem[] = [
     {
+      label: "Users",
+      to: "/users",
+      icon: Users,
+      permission: makePermission("USERS", "MANAGE"),
+    },
+    {
+      label: "Roles",
+      to: "/roles",
+      icon: HardHat,
+      permission: makePermission("ROLES", "MANAGE"),
+    },
+    {
       label: "Settings",
       to: "/settings",
       icon: SettingsIcon,
-      permission: makePermission("SETTINGS", "view"),
+      permission: makePermission("SETTINGS", "VIEW"),
     },
   ];
 
