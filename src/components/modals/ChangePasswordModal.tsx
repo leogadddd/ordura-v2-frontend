@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { showToast } from "@/lib/toast";
 import { changePassword as apiChangePassword } from "@/api/usersApi";
 
@@ -20,6 +21,8 @@ export function ChangePasswordModal({
   const [confirm, setConfirm] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const validate = (): boolean => {
     const e: Record<string, string> = {};
@@ -58,19 +61,47 @@ export function ChangePasswordModal({
           <div className="grid grid-cols-1 gap-4 max-w-md">
             <Input
               label="New Password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               error={errors.password}
               //   do not autofill the password field
               autoComplete="new-password"
+              suffix={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  className="p-1 text-gray-600 hover:text-gray-800"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="w-5 h-5" />
+                  ) : (
+                    <EyeIcon className="w-5 h-5" />
+                  )}
+                </button>
+              }
             />
             <Input
               label="Confirm Password"
-              type="password"
+              type={showConfirm ? "text" : "password"}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               error={errors.confirm}
+              suffix={
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm((s) => !s)}
+                  className="p-1 text-gray-600 hover:text-gray-800"
+                  aria-label={showConfirm ? "Hide password" : "Show password"}
+                >
+                  {showConfirm ? (
+                    <EyeSlashIcon className="w-5 h-5" />
+                  ) : (
+                    <EyeIcon className="w-5 h-5" />
+                  )}
+                </button>
+              }
             />
             {errors.submit && (
               <p className="text-sm text-red-600">{errors.submit}</p>

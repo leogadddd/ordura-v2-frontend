@@ -6,6 +6,7 @@ import DashboardPage from "./pages/Dashboard";
 import POSPage from "./pages/POS";
 import ProductsPage from "./pages/products";
 import OrdersPage from "./pages/orders";
+import RolesPage from "./pages/roles";
 import SettingsPage from "./pages/Settings";
 import AccountPage from "./pages/Account";
 import UsersPage from "./pages/users";
@@ -16,6 +17,7 @@ import { getCurrentUser, checkInitStatus } from "./api/authApi";
 function App() {
   const setUser = useAuthStore((state) => state.setUser);
   const clearUser = useAuthStore((state) => state.clearUser);
+  const currentUser = useAuthStore((state) => state.user);
   const [hasAdmin, setHasAdmin] = useState<boolean | null>(null);
   const [initLoading, setInitLoading] = useState(true);
   const initChecked = useRef(false);
@@ -41,6 +43,17 @@ function App() {
 
     checkInit();
   }, []);
+
+  // If we're in initial setup but a user was just created (e.g. finished
+  // registration), update hasAdmin so the app switches to the normal flow
+  // without requiring a full page reload. This effect must be declared
+  // before the early return for `!hasAdmin`, otherwise TypeScript will
+  // narrow `hasAdmin` to `true` and the comparison below becomes invalid.
+  useEffect(() => {
+    if (currentUser && hasAdmin === false) {
+      setHasAdmin(true);
+    }
+  }, [currentUser, hasAdmin]);
 
   const userFetched = useRef(false);
 
@@ -92,6 +105,12 @@ function App() {
     );
   }
 
+  // If we're in initial setup but a user was just created (e.g. finished
+  // registration), update hasAdmin so the app switches to the normal flow
+  // without requiring a full page reload.
+  // Note: only do this when hasAdmin is explicitly false to avoid
+  // interfering with initial check flow.
+
   // Normal app flow when admin exists
   return (
     <Routes>
@@ -129,6 +148,14 @@ function App() {
         element={
           <AppLayout>
             <UsersPage />
+          </AppLayout>
+        }
+      />
+      <Route
+        path="/roles"
+        element={
+          <AppLayout>
+            <RolesPage />
           </AppLayout>
         }
       />

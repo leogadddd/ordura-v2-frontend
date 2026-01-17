@@ -77,16 +77,18 @@ export function RegisterPage({ isInitialSetup }: { isInitialSetup?: boolean }) {
         roleId: formData.roleId || undefined,
       });
 
+      // Reset redirect flag on successful registration (do this before any
+      // further requests/side-effects to avoid a stale redirect flag causing a
+      // full page navigation from the axios interceptor)
+      resetRedirectFlag();
+
       // Save user to store
       if (response.data?.user) {
         setUser(response.data.user);
       }
 
-      // Reset redirect flag on successful registration
-      resetRedirectFlag();
-
-      // Redirect to dashboard on success
-      navigate("/dashboard", { replace: true });
+      // Redirect to root on success
+      navigate("/", { replace: true });
     } catch (err: any) {
       setError(
         err.response?.data?.error || "Registration failed. Please try again."

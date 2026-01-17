@@ -4,8 +4,18 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
-import { PlusIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
+import {
+  PlusIcon,
+  InformationCircleIcon,
+  EyeIcon,
+  EyeSlashIcon,
+} from "@heroicons/react/24/outline";
 import { userFormSchema } from "@/pages/users/schema";
+import RoleFormModal from "@/components/modals/RoleFormModal";
+import { ALL_PERMISSIONS } from "@/lib/generated-permissions";
+import { modules } from "@/lib/permission/permissions";
+import { getUser } from "@/api/usersApi";
+import { createRole, updateRole } from "@/api/rolesApi";
 import { useOptions } from "@/context/OptionsProvider";
 import { showToast } from "@/lib/toast";
 import type { UserFormData } from "@/pages/users/schema";
@@ -35,6 +45,13 @@ export function UserFormModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
   const { roles, refreshRoles } = useOptions();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [userOverrides, setUserOverrides] = useState<
+    Record<string, boolean | null>
+  >({});
+  const [isLoadingOverrides, setIsLoadingOverrides] = useState(false);
+  const [isRoleEditorOpen, setIsRoleEditorOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -49,8 +66,77 @@ export function UserFormModal({
       setPassword("");
       setConfirmPassword("");
       setErrors({});
+      // Load per-user permission overrides when editing an existing user
+      if (user?.id) {
+        setIsLoadingOverrides(true);
+        getUser(user.id)
+          .then((res) => {
+            const perms = res?.data?.user?.permissions ?? [];
+            const map: Record<string, boolean | null> = {};
+            // initialize map with explicit overrides
+            (ALL_PERMISSIONS as readonly string[])
+              .filter((p) => p !== "*" && !p.includes("*:"))
+              .forEach((p) => {
+                map[p] = null;
+              });
+            for (const p of perms) {
+              map[p.name] = Boolean(p.isAllowed);
+            }
+            setUserOverrides(map);
+          })
+          .catch(() => {
+            setUserOverrides({});
+          })
+          .finally(() => setIsLoadingOverrides(false));
+      } else {
+        // On create, initialize overrides to inherit (null)
+        const map: Record<string, boolean | null> = {};
+        (ALL_PERMISSIONS as readonly string[])
+          .filter((p) => p !== "*" && !p.includes("*:"))
+          .forEach((p) => {
+            map[p] = null;
+          });
+        setUserOverrides(map);
+      }
     }
   }, [isOpen, user]);
+
+  const cycleOverride = (perm: string) => {
+    setUserOverrides((prev) => {
+      const cur = perm in prev ? prev[perm] : null;
+      const next = cur === null ? true : cur === true ? false : null;
+      return { ...prev, [perm]: next };
+    });
+  };
+
+  const resetOverride = (perm: string) => {
+    setUserOverrides((prev) => ({ ...prev, [perm]: null }));
+  };
+
+  const resetAllOverrides = () => {
+    setUserOverrides(() => {
+      const out: Record<string, boolean | null> = {};
+      (ALL_PERMISSIONS as readonly string[])
+        .filter((p) => p !== "*" && !p.includes("*:"))
+        .forEach((p) => (out[p] = null));
+      return out;
+    });
+  };
+
+  const getRolePermissions = () => {
+    const r = roles?.find((rr: any) => rr.id === formData.roleId);
+    if (!r) return [] as string[];
+    if (Array.isArray(r.permissions)) return r.permissions as string[];
+    // handle old JSON shape
+    const perms: string[] = [];
+    const pmap = r.permissions as any;
+    for (const m in pmap) {
+      for (const a in pmap[m]) {
+        if (pmap[m][a]) perms.push(`${m}:${a}`);
+      }
+    }
+    return perms;
+  };
 
   const isFormValid = (): boolean => {
     try {
@@ -119,6 +205,11 @@ export function UserFormModal({
     try {
       const payload = { ...formData } as any;
       if (!user) payload.password = password;
+      // Include per-user permission overrides (only those that are explicit)
+      const overrides = Object.entries(userOverrides || {})
+        .filter(([, v]) => v !== null)
+        .map(([name, v]) => ({ name, isAllowed: !!v }));
+      if (overrides.length > 0) payload.permissions = overrides;
       await onSave(payload);
       onClose();
     } catch (err: any) {
@@ -155,6 +246,22 @@ export function UserFormModal({
               </p>
             </div>
             <div className="w-[70%]">
+              <div className="flex items-center justify-end mb-3 gap-2">
+                <button
+                  type="button"
+                  onClick={resetAllOverrides}
+                  className="text-sm text-gray-600 hover:text-gray-800"
+                >
+                  Reset all overrides
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsRoleEditorOpen(true)}
+                  className="text-sm text-primary hover:underline"
+                >
+                  Edit role permissions
+                </button>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   label="First Name"
@@ -171,6 +278,28 @@ export function UserFormModal({
               </div>
             </div>
           </section>
+          {/* Role editor modal (quick edit) */}
+          <RoleFormModal
+            isOpen={isRoleEditorOpen}
+            onClose={() => setIsRoleEditorOpen(false)}
+            role={roles?.find((r: any) => r.id === formData.roleId) as any}
+            onSave={async (data: any) => {
+              try {
+                if (formData.roleId) {
+                  await updateRole(formData.roleId, data);
+                } else {
+                  await createRole(data);
+                }
+                await refreshRoles({ force: true });
+                showToast.success("Role saved");
+                setIsRoleEditorOpen(false);
+              } catch (err: any) {
+                console.error("Failed to save role:", err);
+                showToast.error(err?.message || "Failed to save role");
+                throw err;
+              }
+            }}
+          />
 
           <section className="flex gap-6 pt-6 border-t border-gray-200">
             <div className="w-[30%]">
@@ -209,7 +338,7 @@ export function UserFormModal({
                   <>
                     <Input
                       label="Password"
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value);
@@ -223,10 +352,26 @@ export function UserFormModal({
                       error={errors.password}
                       required
                       autoComplete="new-password"
+                      suffix={
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((s) => !s)}
+                          className="p-1 text-gray-600 hover:text-gray-800"
+                          aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                          }
+                        >
+                          {showPassword ? (
+                            <EyeSlashIcon className="w-5 h-5" />
+                          ) : (
+                            <EyeIcon className="w-5 h-5" />
+                          )}
+                        </button>
+                      }
                     />
                     <Input
                       label="Confirm Password"
-                      type="password"
+                      type={showConfirmPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(e) => {
                         setConfirmPassword(e.target.value);
@@ -240,6 +385,24 @@ export function UserFormModal({
                       error={errors.confirmPassword}
                       required
                       autoComplete="new-password"
+                      suffix={
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword((s) => !s)}
+                          className="p-1 text-gray-600 hover:text-gray-800"
+                          aria-label={
+                            showConfirmPassword
+                              ? "Hide password"
+                              : "Show password"
+                          }
+                        >
+                          {showConfirmPassword ? (
+                            <EyeSlashIcon className="w-5 h-5" />
+                          ) : (
+                            <EyeIcon className="w-5 h-5" />
+                          )}
+                        </button>
+                      }
                     />
                   </>
                 )}
@@ -292,6 +455,113 @@ export function UserFormModal({
               </div>
               {errors.submit && (
                 <p className="text-sm text-red-600 mt-3">{errors.submit}</p>
+              )}
+            </div>
+          </section>
+
+          <section className="flex gap-6 pt-6 border-t border-gray-200">
+            <div className="w-[30%]">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-lg font-semibold text-primary">
+                  Permissions
+                </h3>
+              </div>
+              <p className="text-sm text-gray-600">
+                Per-user permission overrides. Click a permission to cycle
+                between Inherit → Allow → Deny.
+              </p>
+            </div>
+            <div className="w-[70%]">
+              {isLoadingOverrides ? (
+                <p className="text-sm text-gray-500">Loading permissions…</p>
+              ) : (
+                <div className="space-y-4 max-h-64 overflow-auto pr-2">
+                  {(modules || []).map((m) => {
+                    const perms = (ALL_PERMISSIONS as readonly string[]).filter(
+                      (p) => p.split(":")[0] === m && !p.includes("*")
+                    );
+                    if (perms.length === 0) return null;
+                    const rolePerms = getRolePermissions();
+                    return (
+                      <div key={m} className="border rounded p-3 bg-gray-50">
+                        <div className="flex items-center justify-between mb-2">
+                          <strong className="text-sm">{m}</strong>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {perms.map((p) => {
+                            const state = userOverrides[p];
+                            const roleHas = rolePerms.includes(p);
+                            const effective = state !== null ? state : roleHas;
+                            return (
+                              <div
+                                key={p}
+                                className="flex items-center justify-between gap-4 p-2 rounded hover:bg-white"
+                              >
+                                <div className="text-sm text-gray-700">
+                                  {p.split(":")[1]}
+                                  <div className="text-xs text-gray-400">
+                                    {p}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-2">
+                                    {roleHas && (
+                                      <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
+                                        role
+                                      </span>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => cycleOverride(p)}
+                                      disabled={isSaving}
+                                      className={`text-sm px-2 py-1 rounded-md font-medium ${
+                                        state === true
+                                          ? "bg-green-600 text-white"
+                                          : state === false
+                                          ? "bg-red-600 text-white"
+                                          : effective
+                                          ? "bg-green-100 text-green-700"
+                                          : "bg-gray-100 text-gray-700"
+                                      }`}
+                                      title={
+                                        state === true
+                                          ? "Explicitly allowed"
+                                          : state === false
+                                          ? "Explicitly denied"
+                                          : effective
+                                          ? "Inherit (allowed by role)"
+                                          : "Inherit (not allowed)"
+                                      }
+                                    >
+                                      {state === true
+                                        ? "Allow"
+                                        : state === false
+                                        ? "Deny"
+                                        : effective
+                                        ? "Inherit (Yes)"
+                                        : "Inherit (No)"}
+                                    </button>
+                                    {state !== null && (
+                                      <button
+                                        type="button"
+                                        onClick={() => resetOverride(p)}
+                                        disabled={isSaving}
+                                        className="text-xs text-gray-500 hover:text-gray-700"
+                                        title="Reset to inherit"
+                                      >
+                                        Reset
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
           </section>

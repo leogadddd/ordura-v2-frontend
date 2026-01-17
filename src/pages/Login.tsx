@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Input } from "../components/ui/Input";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { Button } from "../components/ui/Button";
 import { login } from "../api/authApi";
 import { useAuthStore } from "../store/authStore";
@@ -10,6 +11,7 @@ import { resetRedirectFlag } from "../lib/apiClient";
 export function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -75,11 +77,25 @@ export function LoginPage() {
             <Input
               id="password"
               label="Password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
+              suffix={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  className="p-1 text-gray-600 hover:text-gray-800"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="w-5 h-5" />
+                  ) : (
+                    <EyeIcon className="w-5 h-5" />
+                  )}
+                </button>
+              }
             />
 
             <div className="flex items-center justify-between">

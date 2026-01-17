@@ -11,6 +11,8 @@ export interface User {
   roleDetails?: { id: string; name: string } | null;
   isActive?: boolean;
   createdAt?: string;
+  // Optional per-user overrides (name + isAllowed)
+  permissions?: { name: string; isAllowed: boolean }[];
 }
 
 export interface ListUsersParams {
