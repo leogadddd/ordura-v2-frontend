@@ -22,11 +22,13 @@ export function TopBar() {
 
   return (
     <div className="h-7 bg-topbar text-white flex items-center justify-between px-3 shadow-md">
-      <div className="text-xs font-bold">Ordura</div>
       <div className="text-xs text-gray-300 text-center font-semibold">
         {formattedTime} • {formattedDate}
       </div>
-      <div className="flex items-center gap-1 text-xs"></div>
+      <div className="text-xs text-gray-300 text-center font-semibold">
+        Ordura {import.meta.env.VITE_VERSION}
+      </div>
+      {/* <div className="flex items-center gap-1 text-xs"></div> */}
     </div>
   );
 }

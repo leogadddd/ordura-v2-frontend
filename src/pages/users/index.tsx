@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { getUsers, createUser, updateUser, deleteUser } from "@/api/usersApi";
 import ChangePasswordModal from "@/components/modals/ChangePasswordModal";
 import { showToast } from "@/lib/toast";
@@ -52,6 +53,12 @@ export function UsersPage() {
     // initial load
     handleRefresh();
   }, [handleRefresh]);
+
+  // Refresh whenever the route/pathname changes while this component is mounted
+  const location = useLocation();
+  useEffect(() => {
+    handleRefresh();
+  }, [location.pathname, handleRefresh]);
 
   const handleEdit = useCallback((user: UserRow) => {
     setSelectedUser(user);

@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -39,6 +40,12 @@ export function RolesPage() {
       setIsRefreshing(false);
     }
   }, [refetch]);
+
+  // Refresh when the route changes and this page is active
+  const location = useLocation();
+  useEffect(() => {
+    handleRefresh();
+  }, [location.pathname, handleRefresh]);
 
   const handleEdit = useCallback((role: Role) => {
     // Fetch full role (including permissions) before opening editor

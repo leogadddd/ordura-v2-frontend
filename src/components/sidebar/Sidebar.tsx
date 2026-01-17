@@ -10,6 +10,7 @@ import { Popover } from "@/components/ui/Popover";
 import { useAuthStore } from "@/store/authStore";
 import { logout } from "@/api/authApi";
 import { items } from "./nav.items";
+import { Panda } from "lucide-react";
 
 export function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -104,8 +105,10 @@ export function Sidebar() {
           >
             {isExpanded ? (
               <>
+                <div className="flex-1 flex items-center gap-2">
+                  <Panda className="w-5 h-5 text-primary" />
+                </div>
                 <ChevronLeftIcon className="w-5 h-5" />
-                {/* <span className="text-sm font-medium">Collapse</span> */}
               </>
             ) : (
               <ChevronRightIcon className="w-5 h-5" />

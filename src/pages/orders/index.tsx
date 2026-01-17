@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   MagnifyingGlassIcon,
   ArrowPathIcon,
@@ -26,6 +27,12 @@ export function OrdersPage() {
       setIsRefreshing(false);
     }
   }, [refetch]);
+
+  // Refresh when route/pathname changes
+  const location = useLocation();
+  useEffect(() => {
+    handleRefresh();
+  }, [location.pathname, handleRefresh]);
 
   const orders = data?.data?.items || [];
 
