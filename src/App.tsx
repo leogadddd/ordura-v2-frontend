@@ -6,6 +6,8 @@ import DashboardPage from "./pages/Dashboard";
 import POSPage from "./pages/POS";
 import ProductsPage from "./pages/products";
 import OrdersPage from "./pages/orders";
+import SalesTransactionPage from "./pages/transactions/SalesTransaction";
+import CashTransactionPage from "./pages/transactions/CashTransaction";
 import RolesPage from "./pages/roles";
 import SettingsPage from "./pages/Settings";
 import AccountPage from "./pages/Account";
@@ -164,6 +166,30 @@ function App() {
         element={
           <AppLayout>
             <OrdersPage />
+          </AppLayout>
+        }
+      />
+      <Route
+        path="/transactions"
+        element={
+          <AppLayout>
+            <SalesTransactionPage />
+          </AppLayout>
+        }
+      />
+      <Route
+        path="/transactions/sales"
+        element={
+          <AppLayout>
+            <SalesTransactionPage />
+          </AppLayout>
+        }
+      />
+      <Route
+        path="/transactions/cash"
+        element={
+          <AppLayout>
+            <CashTransactionPage />
           </AppLayout>
         }
       />

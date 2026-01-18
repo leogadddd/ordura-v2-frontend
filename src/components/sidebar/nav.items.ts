@@ -1,6 +1,7 @@
 import { makePermission } from "@/lib/permission/permissions";
 import {
   Apple,
+  Banknote,
   HardHat,
   HomeIcon,
   MonitorIcon,
@@ -12,11 +13,12 @@ import {
 
 interface NavItem {
   label: string;
-  to: string;
+  to?: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   permission?: string;
   /** Optional grouping label for this item. When set, Sidebar will render items grouped by section. */
   section?: string;
+  children?: NavItem[];
 }
 
 interface NavigationItems {
@@ -54,7 +56,25 @@ const navigationItems = () => {
       permission: makePermission("ORDERS", "VIEW"),
       section: "Navigation",
     },
-    // USER MANAGEMENT
+    {
+      label: "Transactions",
+      icon: Banknote,
+      // to: "/transactions",
+      permission: makePermission("TRANSACTIONS", "VIEW"),
+      section: "Navigation",
+      children: [
+        {
+          label: "Sales Transaction",
+          to: "/transactions/sales",
+          icon: PackageIcon,
+        },
+        {
+          label: "Cash Transaction",
+          to: "/transactions/cash",
+          icon: Banknote,
+        },
+      ],
+    },
     {
       label: "Users",
       to: "/users",

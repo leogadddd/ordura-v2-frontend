@@ -14,6 +14,7 @@ import { Panda } from "lucide-react";
 
 export function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
+  // hover-based popovers used for folder-like items
   const user = useAuthStore((state) => state.user);
   const hasPermission = useAuthStore((state) => state.hasPermission);
   const clearUser = useAuthStore((state) => state.clearUser);
@@ -129,10 +130,67 @@ export function Sidebar() {
                   <div className="space-y-1">
                     {group.items.map((item) => {
                       const Icon = item.icon;
+
+                      // For folder-like nav items (have children), show a hover-triggered popover anchored to the right
+                      if (item.children && item.children.length > 0) {
+                        return (
+                          <Popover
+                            key={item.label}
+                            placement="right"
+                            // panelClassName="py-2"
+                            className="w-full"
+                            trigger={() => (
+                              // rely on Popover hover handling rather than manual mouse handlers
+                              <div>
+                                <button
+                                  className={`flex items-center gap-2.5 rounded-xl h-12 px-3 w-full text-gray-600 hover:bg-primary-pale`}
+                                  title={item.label}
+                                >
+                                  <Icon className="w-5 h-5" />
+                                  <span className="text-sm font-medium">
+                                    {item.label}
+                                  </span>
+                                  <ChevronRightIcon className="w-4 h-4 ml-auto text-gray-400" />
+                                </button>
+                              </div>
+                            )}
+                            hover
+                          >
+                            {(close) => (
+                              <div className="flex flex-col min-w-50 overflow-hidden">
+                                {item.children!.map((child) => {
+                                  const ChildIcon = child.icon;
+                                  return (
+                                    <NavLink
+                                      key={child.to}
+                                      to={child.to!}
+                                      onClick={() => close()}
+                                      className={({ isActive }) =>
+                                        `flex items-center gap-2.5 h-12 px-4 text-sm ${
+                                          isActive
+                                            ? "bg-primary text-white"
+                                            : "text-gray-600 hover:bg-primary-pale"
+                                        }`
+                                      }
+                                    >
+                                      <ChildIcon className="w-4 h-4" />
+                                      <span className="truncate">
+                                        {child.label}
+                                      </span>
+                                    </NavLink>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </Popover>
+                        );
+                      }
+
+                      // Default single link item
                       return (
                         <NavLink
                           key={item.to}
-                          to={item.to}
+                          to={item.to!}
                           className={({ isActive }) =>
                             `flex items-center gap-2.5 rounded-xl h-12 px-3 ${
                               isActive
@@ -154,10 +212,83 @@ export function Sidebar() {
               ))
             : filteredTopItems.map((item) => {
                 const Icon = item.icon;
+                const toPath = item.to ?? item.children?.[0]?.to ?? "#";
+
+                if (item.children && item.children.length > 0) {
+                  return (
+                    <Popover
+                      key={item.label}
+                      placement="right"
+                      // panelClassName="py-2"
+                      className="w-11"
+                      hover
+                      trigger={() => (
+                        <div>
+                          {item.to ? (
+                            <NavLink
+                              key={item.to}
+                              to={item.to}
+                              className={({ isActive }) =>
+                                `flex items-center gap-2.5 rounded-xl h-12 relative${
+                                  isExpanded ? "px-3" : "w-11 px-3"
+                                } ${
+                                  isActive
+                                    ? "bg-primary text-white"
+                                    : "text-gray-600 hover:bg-primary-pale"
+                                }`
+                              }
+                              title={!isExpanded ? item.label : undefined}
+                            >
+                              <Icon className="w-5 h-5" />
+                              <ChevronRightIcon className="w-3 h-3 absolute top-4.5 right-0" />
+                            </NavLink>
+                          ) : (
+                            <div
+                              className={`flex items-center gap-2.5 rounded-xl h-12 relative ${
+                                isExpanded ? "px-3" : "w-11 px-3"
+                              } text-gray-600 hover:bg-primary-pale`}
+                              title={!isExpanded ? item.label : undefined}
+                              aria-hidden
+                            >
+                              <Icon className="w-5 h-5" />
+                              <ChevronRightIcon className="w-3 h-3 absolute top-4.5 right-0" />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    >
+                      {(close) => (
+                        <div className="flex flex-col min-w-50 overflow-hidden">
+                          {item.children!.map((child) => {
+                            const ChildIcon = child.icon;
+                            return (
+                              <NavLink
+                                key={child.to}
+                                to={child.to!}
+                                onClick={() => close()}
+                                className={({ isActive }) =>
+                                  `flex items-center gap-2.5 h-12 px-4 text-sm ${
+                                    isActive
+                                      ? "bg-primary text-white"
+                                      : "text-gray-600 hover:bg-primary-pale"
+                                  }`
+                                }
+                              >
+                                <ChildIcon className="w-4 h-4" />
+                                <span className="truncate">{child.label}</span>
+                              </NavLink>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </Popover>
+                  );
+                }
+
                 return (
                   <NavLink
-                    key={item.to}
-                    to={item.to}
+                    key={toPath}
+                    to={toPath}
                     className={({ isActive }) =>
                       `flex items-center gap-2.5 rounded-xl h-12 ${
                         isExpanded ? "px-3" : "w-11 px-3"
@@ -183,8 +314,8 @@ export function Sidebar() {
             const Icon = item.icon;
             return (
               <NavLink
-                key={item.to}
-                to={item.to}
+                key={item.to!}
+                to={item.to!}
                 className={({ isActive }) =>
                   `flex items-center gap-2.5 rounded-xl h-12 ${
                     isExpanded ? "px-3" : "w-11 px-3"
