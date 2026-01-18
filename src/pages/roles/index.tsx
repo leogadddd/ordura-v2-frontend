@@ -96,9 +96,9 @@ export function RolesPage() {
     [handleEdit, handleDelete]
   );
 
-  const roles = data?.data || [];
+  const roles: Role[] = (data?.data?.items as Role[]) || [];
 
-  const filtered = roles?.filter((r) => {
+  const filtered = roles.filter((r) => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
     return (r.name + (r.description || "")).toLowerCase().includes(q);

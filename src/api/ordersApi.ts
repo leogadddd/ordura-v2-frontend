@@ -81,6 +81,11 @@ export interface OrderDetails extends Order {
   employee?: EmployeeSummary;
   items: OrderItem[];
   payments: Payment[];
+  salesTransaction?: {
+    id: string;
+    transactionNumber: string;
+    createdAt: string;
+  } | null;
 }
 
 export interface ListOrdersParams {

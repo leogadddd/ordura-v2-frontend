@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { InformationCircleIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { roleFormSchema } from "@/pages/roles/schema";
-import { modules, makePermission } from "@/lib/permission/permissions";
+import { modules } from "@/lib/permission/permissions";
 import { ALL_PERMISSIONS } from "@/lib/generated-permissions";
 import type { Role } from "@/api/rolesApi";
 import { showToast } from "@/lib/toast";

@@ -116,12 +116,6 @@ export function CheckoutModal({
       setAmountReceived("");
     } finally {
       setIsProcessing(false);
-
-      setTimeout(() => {
-        // Auto-close after short delay
-        setSuccessData(null);
-        onClose();
-      }, 3000);
     }
   };
 
@@ -149,16 +143,16 @@ export function CheckoutModal({
       isOpen={isOpen}
       onClose={onClose}
       title="Checkout"
-      maxWidth={successData ? "max-w-2xl" : "max-w-4xl"}
+      maxWidth={successData ? "max-w-md" : "max-w-4xl"}
     >
       <div className="flex gap-6 p-6 pb-4 pt-2">
         {/* Success view */}
         {successData ? (
           <div className="w-full pt-4 flex flex-col items-center justify-center">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <CheckCircleIcon className="w-10 h-10 text-green-500" />
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">
+            <div className="flex flex-col items-center justify-center gap-4 mb-14 mt-4">
+              <CheckCircleIcon className="w-24 h-24 text-green-500" />
+              <div className="text-center">
+                <h3 className="text-2xl font-semibold text-gray-900">
                   Payment Successful
                 </h3>
                 <p className="text-sm text-gray-600">
@@ -167,7 +161,7 @@ export function CheckoutModal({
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-4 space-y-3 min-w-xl">
+            <div className="bg-gray-50 rounded-xl p-4 space-y-3 min-w-sm">
               {successData.orderId && (
                 <div className="flex justify-between text-sm text-gray-700">
                   <span>Order ID</span>
@@ -204,7 +198,7 @@ export function CheckoutModal({
               </div>
             </div>
 
-            <div className="w-full mt-4 grid grid-cols-2 gap-2 max-w-xl">
+            <div className="w-full mt-4 grid grid-cols-2 gap-2 max-w-md">
               <Button
                 type="button"
                 variant="outline"
@@ -237,7 +231,7 @@ export function CheckoutModal({
             <div className="flex-1 min-w-0">
               <div className="space-y-4">
                 {/* Cart Items Summary */}
-                <div className="bg-gray-50 rounded-xl p-4 max-h-48 overflow-y-auto">
+                <div className="bg-gray-50 rounded-xl p-4 h-6xl overflow-y-auto">
                   <h3 className="font-semibold text-gray-800 mb-3">Items</h3>
                   <div className="space-y-2">
                     {cartItems.map((item) => (
@@ -256,15 +250,15 @@ export function CheckoutModal({
 
                 {/* Order Summary */}
                 <div className="bg-primary-pale rounded-xl p-4 space-y-2">
-                  <div className="flex justify-between text-sm text-gray-700">
+                  {/* <div className="flex justify-between text-sm text-gray-700">
                     <span>Subtotal</span>
                     <span>₱{subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-700">
+                  </div> */}
+                  {/* <div className="flex justify-between text-sm text-gray-700">
                     <span>Tax (12%)</span>
                     <span>₱{taxAmount.toFixed(2)}</span>
-                  </div>
-                  {orderDiscount > 0 && (
+                  </div> */}
+                  {/* {orderDiscount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-700">Order Discount</span>
                       <span className="text-red-600">
@@ -283,8 +277,8 @@ export function CheckoutModal({
                       <span className="text-gray-700">Delivery Fee</span>
                       <span>₱{deliveryFee.toFixed(2)}</span>
                     </div>
-                  )}
-                  <div className="border-t border-gray-300 pt-2 flex justify-between font-bold text-base text-primary">
+                  )} */}
+                  <div className="border-t border-gray-300 flex justify-between font-bold text-base text-primary">
                     <span>Total</span>
                     <span>₱{totalAmount.toFixed(2)}</span>
                   </div>
@@ -301,7 +295,7 @@ export function CheckoutModal({
                         key={method.value}
                         type="button"
                         onClick={() => setPaymentMethod(method.value)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                        className={`px-4 py-3 rounded-lg text-sm font-medium transition ${
                           paymentMethod === method.value
                             ? "bg-primary text-white"
                             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -349,7 +343,7 @@ export function CheckoutModal({
                         key={key}
                         type="button"
                         onClick={() => handleKeypadInput(key)}
-                        className={`py-3 rounded-lg font-bold text-lg transition ${
+                        className={`py-4 rounded-lg font-bold text-lg transition ${
                           key === "←"
                             ? "bg-red-100 text-red-700 hover:bg-red-200 col-span-1"
                             : "bg-gray-100 text-gray-900 hover:bg-gray-200"
