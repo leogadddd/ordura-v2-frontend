@@ -164,7 +164,7 @@ export function POSPage() {
       setOrderDiscount(0);
       setServiceFee(0);
       setDeliveryFee(0);
-      setIsCheckoutModalOpen(false);
+      // setIsCheckoutModalOpen(false);
     } catch (error: any) {
       console.error("Failed to place order:", error);
       const errorMessage =

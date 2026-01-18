@@ -1,5 +1,6 @@
 import { makePermission } from "@/lib/permission/permissions";
 import {
+  Apple,
   HardHat,
   HomeIcon,
   MonitorIcon,
@@ -42,7 +43,7 @@ const navigationItems = () => {
     {
       label: "Products",
       to: "/products",
-      icon: PackageIcon,
+      icon: Apple,
       permission: makePermission("PRODUCTS", "MANAGE"),
       section: "Navigation",
     },
