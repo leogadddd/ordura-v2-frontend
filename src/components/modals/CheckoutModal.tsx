@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { BackspaceIcon } from "@heroicons/react/24/outline";
@@ -22,8 +22,10 @@ interface CheckoutModalProps {
   onConfirmPayment: (payment: {
     method: string;
     amountReceived: number;
-  }) => void;
+  }) => void | Promise<any>;
   isLoading?: boolean;
+  // When provided, modal will auto-trigger payment with these values on open
+  autoConfirm?: { method: string; amountReceived: number } | null;
 }
 
 const PAYMENT_METHODS = [
@@ -45,6 +47,7 @@ export function CheckoutModal({
   deliveryFee = 0,
   onConfirmPayment,
   isLoading = false,
+  autoConfirm = null,
 }: CheckoutModalProps) {
   const [paymentMethod, setPaymentMethod] = useState("CASH");
   const [amountReceived, setAmountReceived] = useState("");
@@ -58,11 +61,14 @@ export function CheckoutModal({
     timestamp: string;
   } | null>(null);
 
-  // Calculate totals
+  // Calculate totals (tax applies to subtotal after discounts plus fees)
   const discountedSubtotal = subtotal - (orderDiscount || 0);
-  const taxAmount = discountedSubtotal * TAX_RATE;
-  const totalAmount =
-    discountedSubtotal + taxAmount + (serviceFee || 0) + (deliveryFee || 0);
+  const taxableBase = Math.max(
+    0,
+    discountedSubtotal + (serviceFee || 0) + (deliveryFee || 0),
+  );
+  const taxAmount = taxableBase * TAX_RATE;
+  const totalAmount = taxableBase + taxAmount;
   const changeDue = amountReceived
     ? Math.max(0, parseFloat(amountReceived) - totalAmount)
     : 0;
@@ -87,26 +93,47 @@ export function CheckoutModal({
     }
   };
 
-  const handleConfirmPayment = async () => {
-    const amount = parseFloat(amountReceived || "0");
+  const handleConfirmPayment = async (override?: {
+    method?: string;
+    amount?: number;
+  }) => {
+    const amount =
+      typeof override?.amount === "number"
+        ? override.amount
+        : parseFloat(amountReceived || "0");
+    const method = override?.method ?? paymentMethod;
     if (amount < totalAmount) return;
 
     try {
       setIsProcessing(true);
-      // Allow onConfirmPayment to be async and to optionally return metadata (e.g., orderId)
-      const res = onConfirmPayment({
-        method: paymentMethod,
-        amountReceived: amount,
-      }) as unknown;
-
       let returned: any = null;
-      if (res && typeof (res as Promise<any>).then === "function") {
-        returned = await (res as Promise<any>);
+
+      try {
+        const res = onConfirmPayment({
+          method,
+          amountReceived: amount,
+        }) as unknown;
+
+        if (res && typeof (res as Promise<any>).then === "function") {
+          returned = await (res as Promise<any>);
+        } else {
+          returned = res;
+        }
+      } catch (err: any) {
+        console.error("Payment handler failed:", err);
+        // Show toast and exit without showing success
+        try {
+          const { showToast } = await import("@/lib/toast");
+          showToast.error(err?.message || "Payment failed");
+        } catch (e) {
+          console.error("Failed to show toast", e);
+        }
+        return;
       }
 
       setSuccessData({
-        orderId: returned?.orderId,
-        method: paymentMethod,
+        orderId: returned?.data?.id || returned?.orderId || null,
+        method,
         amountReceived: amount,
         changeDue: Math.max(0, amount - totalAmount),
         totalAmount,
@@ -118,6 +145,24 @@ export function CheckoutModal({
       setIsProcessing(false);
     }
   };
+
+  // Auto-trigger payment when modal opens with autoConfirm (only once per open)
+  const autoTriggeredRef = useRef(false);
+  useEffect(() => {
+    if (isOpen && autoConfirm && !successData && !autoTriggeredRef.current) {
+      autoTriggeredRef.current = true;
+      setPaymentMethod(autoConfirm.method);
+      // Call with override so we don't race with state updates
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      handleConfirmPayment({
+        method: autoConfirm.method,
+        amount: autoConfirm.amountReceived,
+      });
+    }
+    if (!isOpen) {
+      autoTriggeredRef.current = false;
+    }
+  }, [isOpen, autoConfirm, successData]);
 
   // Reset internal state if modal is closed externally
   useEffect(() => {
@@ -223,6 +268,40 @@ export function CheckoutModal({
               >
                 Done
               </Button>
+            </div>
+          </div>
+        ) : autoConfirm && !successData ? (
+          // Auto-confirm processing view (prevents flashing of the full checkout UI)
+          <div className="w-full pt-4 flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center justify-center gap-4 mb-14 mt-4">
+              <svg
+                className="w-20 h-20 text-primary animate-spin"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+              <div className="text-center">
+                <h3 className="text-2xl font-semibold text-gray-900">
+                  Processing Order…
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Please wait while the order is finalized.
+                </p>
+              </div>
             </div>
           </div>
         ) : (
@@ -374,7 +453,7 @@ export function CheckoutModal({
                 </Button>
                 <Button
                   type="button"
-                  onClick={handleConfirmPayment}
+                  onClick={() => handleConfirmPayment()}
                   variant="primary"
                   size="lg"
                   disabled={

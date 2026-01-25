@@ -7,6 +7,7 @@ import { CheckoutModal } from "@/components/modals/CheckoutModal";
 import { Cart } from "@/components/Cart";
 import { createOrder } from "@/api/createOrderApi";
 import { showToast } from "@/lib/toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface CartItem {
   id: string;
@@ -52,7 +53,7 @@ export function POSPage() {
 
   // Get unique categories
   const categories = Array.from(
-    new Set(products.map((p) => p.category))
+    new Set(products.map((p) => p.category)),
   ).sort();
 
   // Reset selected category if no products are available
@@ -89,8 +90,8 @@ export function POSPage() {
         cart.map((item) =>
           item.id === productWithDetails.id
             ? { ...item, quantity: productWithDetails.quantity }
-            : item
-        )
+            : item,
+        ),
       );
     } else {
       setCart([...cart, { ...productWithDetails }]);
@@ -102,9 +103,9 @@ export function POSPage() {
     setCart(
       cart
         .map((item) =>
-          item.id === id ? { ...item, quantity: item.quantity + delta } : item
+          item.id === id ? { ...item, quantity: item.quantity + delta } : item,
         )
-        .filter((item) => item.quantity > 0)
+        .filter((item) => item.quantity > 0),
     );
   };
 
@@ -116,11 +117,36 @@ export function POSPage() {
     setCart([]);
   };
 
+  const [isNoPaymentConfirmOpen, setIsNoPaymentConfirmOpen] = useState(false);
+  const [autoConfirmPayment, setAutoConfirmPayment] = useState<{
+    method: string;
+    amountReceived: number;
+  } | null>(null);
+
   const handlePlaceOrder = () => {
     if (cart.length === 0) {
       showToast.error("Cart is empty");
       return;
     }
+
+    const subtotal = cart.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    );
+    const discountedSubtotal = subtotal - orderDiscount;
+    const taxableBase = Math.max(
+      0,
+      discountedSubtotal + serviceFee + deliveryFee,
+    );
+    const taxAmount = taxableBase * 0.12;
+    const grandTotal = taxableBase + taxAmount;
+
+    // If the grand total is zero or negative, prompt confirmation to create order with no payment required
+    if (grandTotal <= 0) {
+      setIsNoPaymentConfirmOpen(true);
+      return;
+    }
+
     setIsCheckoutModalOpen(true);
   };
 
@@ -133,15 +159,18 @@ export function POSPage() {
       // Calculate totals
       const subtotal = cart.reduce(
         (sum, item) => sum + item.price * item.quantity,
-        0
+        0,
       );
       const discountedSubtotal = subtotal - orderDiscount;
-      const taxAmount = discountedSubtotal * 0.12;
-      const grandTotal =
-        discountedSubtotal + taxAmount + serviceFee + deliveryFee;
+      const taxableBase = Math.max(
+        0,
+        discountedSubtotal + serviceFee + deliveryFee,
+      );
+      const taxAmount = taxableBase * 0.12;
+      const grandTotal = taxableBase + taxAmount;
 
       // Create order
-      await createOrder({
+      const res = await createOrder({
         items: cart.map((item) => ({
           productId: item.id,
           name: item.name,
@@ -164,7 +193,8 @@ export function POSPage() {
       setOrderDiscount(0);
       setServiceFee(0);
       setDeliveryFee(0);
-      // setIsCheckoutModalOpen(false);
+
+      return res;
     } catch (error: any) {
       console.error("Failed to place order:", error);
       const errorMessage =
@@ -175,6 +205,13 @@ export function POSPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleConfirmNoPayment = async () => {
+    // Instead of creating an order directly, open the Checkout modal and auto-confirm with NONE/0
+    setIsNoPaymentConfirmOpen(false);
+    setAutoConfirmPayment({ method: "NONE", amountReceived: 0 });
+    setIsCheckoutModalOpen(true);
   };
 
   const handleEditItem = (item: CartItem) => {
@@ -198,17 +235,21 @@ export function POSPage() {
       />
       <CheckoutModal
         isOpen={isCheckoutModalOpen}
-        onClose={() => setIsCheckoutModalOpen(false)}
+        onClose={() => {
+          setIsCheckoutModalOpen(false);
+          setAutoConfirmPayment(null);
+        }}
         cartItems={cart}
         subtotal={cart.reduce(
           (sum, item) => sum + item.price * item.quantity,
-          0
+          0,
         )}
         orderDiscount={orderDiscount}
         serviceFee={serviceFee}
         deliveryFee={deliveryFee}
         onConfirmPayment={handleConfirmPayment}
         isLoading={isSubmitting}
+        autoConfirm={autoConfirmPayment}
       />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 overflow-hidden h-full">
         {/* Products Section */}
@@ -313,6 +354,18 @@ export function POSPage() {
           onOrderDiscountChange={setOrderDiscount}
           onServiceFeeChange={setServiceFee}
           onDeliveryFeeChange={setDeliveryFee}
+        />
+
+        <ConfirmDialog
+          isOpen={isNoPaymentConfirmOpen}
+          onClose={() => setIsNoPaymentConfirmOpen(false)}
+          onConfirm={handleConfirmNoPayment}
+          title="No payment required"
+          description="This transaction's total is zero or negative. No payment is required. Confirm to complete the transaction and create the order."
+          confirmText="Complete Order"
+          cancelText="Cancel"
+          confirmVariant="primary"
+          isLoading={isSubmitting}
         />
       </div>
     </div>

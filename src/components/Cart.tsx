@@ -43,7 +43,7 @@ export function Cart({
   const [itemToRemove, setItemToRemove] = useState<string | null>(null);
   const [isFeesModalOpen, setIsFeesModalOpen] = useState(false);
   const [highlightedItemId, setHighlightedItemId] = useState<string | null>(
-    null
+    null,
   );
   const prevItemsRef = useRef<CartItem[]>(items);
   const highlightTimeoutRef = useRef<number | null>(null);
@@ -75,16 +75,21 @@ export function Cart({
 
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   );
   const discountedSubtotal = subtotal - orderDiscount;
-  const tax = discountedSubtotal * 0.12; // 12% VAT
-  const total = discountedSubtotal + tax + serviceFee + deliveryFee;
+  // Taxable base includes subtotal after discount plus any service/delivery fees
+  const taxableBase = Math.max(
+    0,
+    discountedSubtotal + serviceFee + deliveryFee,
+  );
+  const tax = taxableBase * 0.12; // 12% VAT
+  const total = taxableBase + tax;
 
   const handleApplyFees = (
     newOrderDiscount: number,
     newServiceFee: number,
-    newDeliveryFee: number
+    newDeliveryFee: number,
   ) => {
     onOrderDiscountChange?.(newOrderDiscount);
     onServiceFeeChange?.(newServiceFee);
