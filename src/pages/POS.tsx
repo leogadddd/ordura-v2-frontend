@@ -254,14 +254,14 @@ export function POSPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 overflow-hidden h-full">
         {/* Products Section */}
         <div className="lg:col-span-2 flex flex-col min-h-0 p-6">
-          <header className="mb-4">
+          {/* <header className="mb-4">
             <h1 className="text-2xl font-semibold text-primary">
               Point of Sale
             </h1>
             <p className="text-sm text-gray-600">
               Process customer transactions and manage orders.
             </p>
-          </header>
+          </header> */}
           <div className="mb-3 relative">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
