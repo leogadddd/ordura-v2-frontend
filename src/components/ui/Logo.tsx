@@ -55,7 +55,7 @@ export function Logo({
   let textStyle: { fontSize?: string } | undefined;
   if (typeof size === "number") {
     // make the text roughly half the logo size, with a minimum
-    textStyle = { fontSize: `${Math.max(10, Math.round(size / 2))}px` };
+    textStyle = { fontSize: `${Math.max(10, Math.round(size / 1.18))}px` };
   } else if (typeof size === "string" && !(size in textSizeClassMap)) {
     // for arbitrary CSS size strings, use calc to compute half
     textStyle = { fontSize: `calc(${size} / 2)` };
@@ -104,7 +104,10 @@ export function Logo({
         loading="lazy"
         draggable={false}
       />
-      <span className="font-brand text-2xl font-medium leading-none">
+      <span
+        className="font-brand text-primary text-2xl font-medium leading-none"
+        style={textStyle}
+      >
         {textToShow}
       </span>
     </div>

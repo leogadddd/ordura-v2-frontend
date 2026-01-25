@@ -7,6 +7,7 @@ import { Button } from "../components/ui/Button";
 import { login } from "../api/authApi";
 import { useAuthStore } from "../store/authStore";
 import { resetRedirectFlag } from "../lib/apiClient";
+import Logo from "@/components/ui/Logo";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
@@ -42,7 +43,7 @@ export function LoginPage() {
       setError(
         err.response?.data?.error ||
           err.response?.data?.message ||
-          "Login failed. Please try again."
+          "Login failed. Please try again.",
       );
     } finally {
       setIsLoading(false);
@@ -53,7 +54,8 @@ export function LoginPage() {
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">Ordura POS</h1>
+          {/* <h1 className="text-4xl font-bold text-primary mb-2">Ordura POS</h1>/ */}
+          <Logo size={64} showText="Ordura" />
           <p className="text-gray-600">Sign in to your account</p>
         </div>
 
