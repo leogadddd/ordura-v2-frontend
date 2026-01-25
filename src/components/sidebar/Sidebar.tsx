@@ -10,7 +10,7 @@ import { Popover } from "@/components/ui/Popover";
 import { useAuthStore } from "@/store/authStore";
 import { logout } from "@/api/authApi";
 import { items } from "./nav.items";
-import { Panda } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 
 export function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -21,11 +21,11 @@ export function Sidebar() {
   const navigate = useNavigate();
 
   const filteredTopItems = items.top.filter(
-    (item) => !item.permission || hasPermission(item.permission)
+    (item) => !item.permission || hasPermission(item.permission),
   );
 
   const filteredBottomItems = items.bottom.filter(
-    (item) => !item.permission || hasPermission(item.permission)
+    (item) => !item.permission || hasPermission(item.permission),
   );
 
   const handleLogout = async () => {
@@ -100,19 +100,20 @@ export function Sidebar() {
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className={`flex items-center gap-2.5 rounded-xl h-12 text-gray-600 hover:bg-primary-pale ${
-              isExpanded ? "px-3 w-full" : "w-11 px-3 justify-center"
+              isExpanded ? "px-2 w-full" : "w-[42px] px-2 justify-center"
             }`}
             title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
           >
             {isExpanded ? (
               <>
                 <div className="flex-1 flex items-center gap-2">
-                  <Panda className="w-5 h-5 text-primary" />
+                  <Logo size={26} alt="Ordura logo" showText="Ordura" />
                 </div>
-                <ChevronLeftIcon className="w-5 h-5" />
+                <ChevronLeftIcon className="w-5 h-5 opacity-25" />
               </>
             ) : (
-              <ChevronRightIcon className="w-5 h-5" />
+              // <ChevronRightIcon className="w-5 h-5 opacity-25" />
+              <Logo size={28} alt="Ordura logo" />
             )}
           </button>
         </div>
@@ -350,7 +351,7 @@ export function Sidebar() {
               >
                 <div
                   className={`${getAvatarColor(
-                    userInitial
+                    userInitial,
                   )} w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm shrink-0`}
                 >
                   {userInitial ?? "U"}

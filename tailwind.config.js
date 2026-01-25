@@ -9,6 +9,18 @@ export default {
         "primary-lighter": "#7C94EC",
         "primary-pale": "#E8EDFB",
       },
+      fontFamily: {
+        brand: [
+          "Batangas",
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica Neue",
+          "Arial",
+          "sans-serif",
+        ],
+      },
     },
   },
   plugins: [],

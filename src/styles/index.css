@@ -1,5 +1,27 @@
 @import "tailwindcss";
 
+/* Brand font (place your font file under /public/fonts/, e.g. /public/fonts/batangas-bold.otf) */
+@font-face {
+  font-family: "Batangas";
+  src: url("/fonts/batangas-bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Utility class to use the brand font */
+.font-brand {
+  font-family:
+    "Batangas",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+}
+
 @theme {
   --color-primary: #004d61;
   --color-primary-light: #006680;
@@ -52,7 +74,8 @@
 
 [data-sonner-toast] {
   border-radius: 12px !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
     0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
   border: 1px solid rgba(0, 77, 97, 0.1) !important;
   padding: 16px !important;
