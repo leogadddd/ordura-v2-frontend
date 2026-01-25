@@ -11,6 +11,7 @@ import { useCreateProduct, useUpdateProduct } from "@/hooks/useProducts";
 import { showToast } from "@/lib/toast";
 import { useOptions } from "@/context/OptionsProvider";
 import type { Product } from "@/api/productsApi";
+import { formatApiError, extractValidationErrors } from "@/lib/apiError";
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -33,7 +34,7 @@ export function ProductFormModal({
   });
 
   const [status, setStatus] = useState<"ACTIVE" | "INACTIVE" | "OUT_OF_STOCK">(
-    "ACTIVE"
+    "ACTIVE",
   );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -42,7 +43,7 @@ export function ProductFormModal({
   const [requiresFulfillment, setRequiresFulfillment] =
     useState<boolean>(false);
   const [fulfillmentType, setFulfillmentType] = useState<string | undefined>(
-    undefined
+    undefined,
   );
 
   const { fulfillmentTypes, refreshFulfillmentTypes } = useOptions();
@@ -54,7 +55,7 @@ export function ProductFormModal({
   useEffect(() => {
     if (!fulfillmentTypes) {
       refreshFulfillmentTypes().catch((err) =>
-        console.error("Failed to load fulfillment types:", err)
+        console.error("Failed to load fulfillment types:", err),
       );
     }
   }, [fulfillmentTypes, refreshFulfillmentTypes]);
@@ -157,13 +158,11 @@ export function ProductFormModal({
       onClose();
     } catch (error: any) {
       console.error("Failed to save product:", error);
-      const errorMessage =
-        error?.response?.data?.error ||
-        error?.response?.data?.message ||
-        error?.message ||
-        "Failed to save product";
-      setErrors({ submit: String(errorMessage) });
-      showToast.error(String(errorMessage));
+      const msg = formatApiError(error);
+      const validation = extractValidationErrors(error);
+      if (validation) setErrors(validation);
+      else setErrors({ submit: msg });
+      showToast.error(msg);
     }
   };
 
@@ -204,12 +203,11 @@ export function ProductFormModal({
       onClose();
     } catch (error: any) {
       console.error("Failed to save draft:", error);
-      const errorMessage =
-        error?.response?.data?.error ||
-        error?.message ||
-        "Failed to save draft";
-      setErrors({ submit: String(errorMessage) });
-      showToast.error(String(errorMessage));
+      const msg = formatApiError(error);
+      const validation = extractValidationErrors(error);
+      if (validation) setErrors(validation);
+      else setErrors({ submit: msg });
+      showToast.error(msg);
     }
   };
 
@@ -551,8 +549,8 @@ export function ProductFormModal({
               {isLoading
                 ? "Saving..."
                 : product
-                ? "Update Product"
-                : "Add Product"}
+                  ? "Update Product"
+                  : "Add Product"}
             </Button>
           </div>
         </div>

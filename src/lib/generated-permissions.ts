@@ -22,19 +22,9 @@ export const ALL_PERMISSIONS = [
   "ORDERS:CREATE",
   "ORDERS:EDIT",
   "ORDERS:MANAGE",
+  "TRANSACTIONS:VIEW",
   "REPORTS:VIEW",
   "SETTINGS:VIEW",
-  "SETTINGS:MANAGE",
-  "PRODUCTS:*",
-  "USERS:*",
-  "ROLES:*",
-  "ORDERS:*",
-  "*:MANAGE",
-  "*:VIEW",
-  "*:CREATE",
-  "*:EDIT",
-  "*:DELETE",
-  "*:ORDER",
-  "*"
+  "SETTINGS:MANAGE"
 ] as const;
 export type Permission = (typeof ALL_PERMISSIONS)[number];

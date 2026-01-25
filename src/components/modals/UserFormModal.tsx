@@ -14,12 +14,12 @@ import { userFormSchema } from "@/pages/users/schema";
 import RoleFormModal from "@/components/modals/RoleFormModal";
 import PermissionsModal from "@/components/modals/PermissionsModal";
 import { ALL_PERMISSIONS } from "@/lib/generated-permissions";
-import { modules } from "@/lib/permission/permissions";
 import { getUser } from "@/api/usersApi";
 import { createRole, updateRole } from "@/api/rolesApi";
 import { useOptions } from "@/context/OptionsProvider";
 import { showToast } from "@/lib/toast";
 import type { UserFormData } from "@/pages/users/schema";
+import { formatApiError, extractValidationErrors } from "@/lib/apiError";
 
 interface UserFormModalProps {
   isOpen: boolean;
@@ -51,6 +51,10 @@ export function UserFormModal({
   const [userOverrides, setUserOverrides] = useState<
     Record<string, boolean | null>
   >({});
+  const [initialUserOverrides, setInitialUserOverrides] = useState<Record<
+    string,
+    boolean | null
+  > | null>(null);
   const [isLoadingOverrides, setIsLoadingOverrides] = useState(false);
   const [isRoleEditorOpen, setIsRoleEditorOpen] = useState(false);
   const [isPermsOpen, setIsPermsOpen] = useState(false);
@@ -76,6 +80,8 @@ export function UserFormModal({
           .then((res) => {
             const perms = res?.data?.user?.permissions ?? [];
             const map: Record<string, boolean | null> = {};
+            // include wildcard in map
+            map["*"] = null;
             // initialize map with explicit overrides
             (ALL_PERMISSIONS as readonly string[])
               .filter((p) => p !== "*" && !p.includes("*:"))
@@ -86,39 +92,33 @@ export function UserFormModal({
               map[p.name] = Boolean(p.isAllowed);
             }
             setUserOverrides(map);
+            // snapshot initial overrides for change detection
+            setInitialUserOverrides(map);
           })
           .catch(() => {
             setUserOverrides({});
+            setInitialUserOverrides({});
           })
           .finally(() => setIsLoadingOverrides(false));
       } else {
         // On create, initialize overrides to inherit (null)
         const map: Record<string, boolean | null> = {};
+        map["*"] = null;
         (ALL_PERMISSIONS as readonly string[])
           .filter((p) => p !== "*" && !p.includes("*:"))
           .forEach((p) => {
             map[p] = null;
           });
         setUserOverrides(map);
+        setInitialUserOverrides(map);
       }
     }
   }, [isOpen, user]);
 
-  const cycleOverride = (perm: string) => {
-    setUserOverrides((prev) => {
-      const cur = perm in prev ? prev[perm] : null;
-      const next = cur === null ? true : cur === true ? false : null;
-      return { ...prev, [perm]: next };
-    });
-  };
-
-  const resetOverride = (perm: string) => {
-    setUserOverrides((prev) => ({ ...prev, [perm]: null }));
-  };
-
   const resetAllOverrides = () => {
     setUserOverrides(() => {
       const out: Record<string, boolean | null> = {};
+      out["*"] = null;
       (ALL_PERMISSIONS as readonly string[])
         .filter((p) => p !== "*" && !p.includes("*:"))
         .forEach((p) => (out[p] = null));
@@ -208,17 +208,37 @@ export function UserFormModal({
     try {
       const payload = { ...formData } as any;
       if (!user) payload.password = password;
-      // Include per-user permission overrides (only those that are explicit)
-      const overrides = Object.entries(userOverrides || {})
-        .filter(([, v]) => v !== null)
-        .map(([name, v]) => ({ name, isAllowed: !!v }));
-      if (overrides.length > 0) payload.permissions = overrides;
+      // Include only overrides that changed from the initial snapshot.
+      // If an override was reset to null, we include it with isAllowed: null to
+      // indicate the per-user mapping should be removed.
+      const ovrsToSend: { name: string; isAllowed: boolean | null }[] = [];
+      if (initialUserOverrides) {
+        for (const [name, cur] of Object.entries(userOverrides || {})) {
+          const initial = initialUserOverrides[name as string];
+          if (cur !== initial) {
+            ovrsToSend.push({
+              name,
+              isAllowed: cur === undefined ? null : cur,
+            });
+          }
+        }
+      } else {
+        // No initial snapshot (shouldn't happen), send explicit non-null only
+        for (const [name, cur] of Object.entries(userOverrides || {})) {
+          if (cur !== null && cur !== undefined)
+            ovrsToSend.push({ name, isAllowed: cur });
+        }
+      }
+      if (ovrsToSend.length > 0) payload.permissions = ovrsToSend;
       await onSave(payload);
       onClose();
     } catch (err: any) {
       console.error("Failed to save user:", err);
-      showToast.error(err?.message || "Failed to save user");
-      setErrors({ submit: String(err?.message || "Failed to save user") });
+      const msg = formatApiError(err);
+      const validation = extractValidationErrors(err);
+      if (validation) setErrors(validation);
+      else setErrors({ submit: msg });
+      showToast.error(msg);
       throw err;
     } finally {
       setIsSaving(false);
@@ -483,31 +503,28 @@ export function UserFormModal({
               </p>
             </div>
             <div className="w-[70%]">
-              {isLoadingOverrides ? (
-                <p className="text-sm text-gray-500">Loading permissions…</p>
-              ) : (
-                <div className="flex flex-col justify-between">
-                  <div className="flex items-center gap-2 mt-4">
-                    <Button
-                      type="button"
-                      size="lg"
-                      onClick={() => setIsPermsOpen(true)}
-                      className="text-sm text-primary"
-                    >
-                      Edit permissions
-                    </Button>
-                    <span className="text-sm text-gray-600">
-                      (
-                      {
-                        Object.values(userOverrides || {}).filter(
-                          (v) => v !== null,
-                        ).length
-                      }{" "}
-                      overrides)
-                    </span>
-                  </div>
+              <div className="flex flex-col justify-between">
+                <div className="flex items-center gap-2 mt-4">
+                  <Button
+                    type="button"
+                    size="lg"
+                    onClick={() => setIsPermsOpen(true)}
+                    className="text-sm text-primary"
+                    disabled={isLoadingOverrides}
+                  >
+                    Edit Permissions
+                  </Button>
+                  <span className="text-sm text-gray-600">
+                    (
+                    {
+                      Object.values(userOverrides || {}).filter(
+                        (v) => v !== null,
+                      ).length
+                    }{" "}
+                    overrides)
+                  </span>
                 </div>
-              )}
+              </div>
 
               <PermissionsModal
                 isOpen={isPermsOpen}

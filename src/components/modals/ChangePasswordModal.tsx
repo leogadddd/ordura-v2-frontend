@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { showToast } from "@/lib/toast";
 import { changePassword as apiChangePassword } from "@/api/usersApi";
+import { formatApiError, extractValidationErrors } from "@/lib/apiError";
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -42,8 +43,11 @@ export function ChangePasswordModal({
       onClose();
     } catch (err: any) {
       console.error("Change password failed:", err);
-      showToast.error(err?.message || "Failed to change password");
-      setErrors({ submit: err?.message || "Failed to change password" });
+      const msg = formatApiError(err);
+      showToast.error(msg);
+      const validation = extractValidationErrors(err);
+      if (validation) setErrors(validation);
+      else setErrors({ submit: msg });
     } finally {
       setIsSaving(false);
     }

@@ -46,11 +46,28 @@ export default function PermissionsModal(props: PermissionsModalProps) {
     }
   }, [isOpen]);
 
+  const getConcretePermissions = () =>
+    (ALL_PERMISSIONS as readonly string[]).filter(
+      (p) => p !== "*" && !p.includes("*:"),
+    );
+
   const toggleRolePerm = (p: string) => {
     setRolePerms((prev) => {
       const next = new Set(prev);
       if (next.has(p)) next.delete(p);
       else next.add(p);
+      return next;
+    });
+  };
+
+  const setRolePermsFor = (perms: string[], enabled: boolean) => {
+    setRolePerms((prev) => {
+      const next = new Set(prev);
+      if (enabled) {
+        for (const p of perms) next.add(p);
+      } else {
+        for (const p of perms) next.delete(p);
+      }
       return next;
     });
   };
@@ -65,6 +82,14 @@ export default function PermissionsModal(props: PermissionsModalProps) {
 
   const resetOverride = (perm: string) => {
     setOverrides((prev) => ({ ...prev, [perm]: null }));
+  };
+
+  const setOverridesFor = (perms: string[], value: boolean | null) => {
+    setOverrides((prev) => {
+      const next = { ...prev };
+      for (const p of perms) next[p] = value;
+      return next;
+    });
   };
 
   const resetAll = () => {
@@ -114,6 +139,33 @@ export default function PermissionsModal(props: PermissionsModalProps) {
             <div className="w-[70%]">
               {props.mode === "role" ? (
                 <div className="space-y-4 overflow-auto pr-2">
+                  {/* Global wildcard control for roles */}
+                  <div className="rounded-xl p-4 bg-primary/10 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <strong className="text-sm text-primary">Global</strong>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3">
+                      <label className="flex items-center gap-2 p-3 rounded-lg hover:bg-primary/20">
+                        <input
+                          type="checkbox"
+                          checked={getConcretePermissions().every((p) =>
+                            rolePerms.has(p),
+                          )}
+                          onChange={(e) =>
+                            setRolePermsFor(
+                              getConcretePermissions(),
+                              e.target.checked,
+                            )
+                          }
+                          className="w-4 h-4"
+                        />
+                        <div className="text-sm text-gray-700">
+                          All permissions
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
                   {(modules || []).map((m) => {
                     const perms = (ALL_PERMISSIONS as readonly string[]).filter(
                       (p) => p.split(":")[0] === m && !p.includes("*"),
@@ -126,12 +178,23 @@ export default function PermissionsModal(props: PermissionsModalProps) {
                       >
                         <div className="flex items-center justify-between mb-2">
                           <strong className="text-sm text-primary">{m}</strong>
+                          <label className="flex items-center gap-2 text-xs text-gray-500">
+                            <input
+                              type="checkbox"
+                              checked={perms.every((p) => rolePerms.has(p))}
+                              onChange={(e) =>
+                                setRolePermsFor(perms, e.target.checked)
+                              }
+                              className="w-4 h-4"
+                            />
+                            <span className="pl-2">All</span>
+                          </label>
                         </div>
                         <div className="grid grid-cols-3 gap-3">
                           {perms.map((p) => (
                             <label
                               key={p}
-                              className="flex items-center gap-2 p-3 rounded-lg hover:bg-primary/20"
+                              className={`flex items-center gap-2 p-3 rounded-lg hover:bg-primary/20`}
                             >
                               <input
                                 type="checkbox"
@@ -152,6 +215,33 @@ export default function PermissionsModal(props: PermissionsModalProps) {
                 </div>
               ) : (
                 <div className="space-y-4 overflow-auto pr-2">
+                  {/* Global wildcard control for users */}
+                  <div className="rounded-xl p-4 bg-primary/10 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <strong className="text-sm text-primary">Global</strong>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3">
+                      <label className="flex items-center gap-2 p-3 rounded-lg hover:bg-primary/20">
+                        <input
+                          type="checkbox"
+                          checked={getConcretePermissions().every(
+                            (p) => overrides[p] === true,
+                          )}
+                          onChange={(e) =>
+                            setOverridesFor(
+                              getConcretePermissions(),
+                              e.target.checked ? true : null,
+                            )
+                          }
+                          className="w-4 h-4"
+                        />
+                        <div className="text-sm text-gray-700">
+                          All permissions
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
                   {(modules || []).map((m) => {
                     const perms = (ALL_PERMISSIONS as readonly string[]).filter(
                       (p) => p.split(":")[0] === m && !p.includes("*"),
@@ -159,6 +249,9 @@ export default function PermissionsModal(props: PermissionsModalProps) {
                     if (perms.length === 0) return null;
                     const roleHas =
                       (props as UserModeProps).rolePermissions || [];
+                    const moduleAllSelected = perms.every(
+                      (p) => overrides[p] === true,
+                    );
                     return (
                       <div
                         key={m}
@@ -166,6 +259,20 @@ export default function PermissionsModal(props: PermissionsModalProps) {
                       >
                         <div className="flex items-center justify-between mb-2">
                           <strong className="text-sm text-primary">{m}</strong>
+                          <label className="flex items-center gap-2 text-xs text-gray-500">
+                            <input
+                              type="checkbox"
+                              checked={moduleAllSelected}
+                              onChange={(e) =>
+                                setOverridesFor(
+                                  perms,
+                                  e.target.checked ? true : null,
+                                )
+                              }
+                              className="w-4 h-4"
+                            />
+                            <span className="pl-2">All</span>
+                          </label>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           {perms.map((p) => {
@@ -175,7 +282,7 @@ export default function PermissionsModal(props: PermissionsModalProps) {
                             return (
                               <div
                                 key={p}
-                                className="flex items-center justify-between gap-4 p-3 rounded-lg hover:bg-primary/20"
+                                className={`flex items-center justify-between gap-4 p-3 rounded-lg hover:bg-primary/20`}
                               >
                                 <div className="text-sm text-gray-700">
                                   {p.split(":")[1]}

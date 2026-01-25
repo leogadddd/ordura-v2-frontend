@@ -12,7 +12,7 @@ interface FeesConfigModalProps {
   onApply: (
     orderDiscount: number,
     serviceFee: number,
-    deliveryFee: number
+    deliveryFee: number,
   ) => void;
 }
 
@@ -27,19 +27,38 @@ export function FeesConfigModal({
   subtotal,
   onApply,
 }: FeesConfigModalProps) {
-  const [localOrderDiscount, setLocalOrderDiscount] = useState(orderDiscount);
-  const [localServiceFee, setLocalServiceFee] = useState(serviceFee);
-  const [localDeliveryFee, setLocalDeliveryFee] = useState(deliveryFee);
+  // Store values as strings to allow user typing (partial input) and sanitize on change
+  const [localOrderDiscount, setLocalOrderDiscount] = useState(
+    String(orderDiscount),
+  );
+  const [localServiceFee, setLocalServiceFee] = useState(String(serviceFee));
+  const [localDeliveryFee, setLocalDeliveryFee] = useState(String(deliveryFee));
 
+  function sanitizeNumericInput(input: string) {
+    if (typeof input !== "string") return "";
+    // Remove invalid chars (allow digits and dot)
+    let s = input.replace(/[^0-9.]/g, "");
+    // Keep only first dot
+    const firstDot = s.indexOf(".");
+    if (firstDot >= 0) {
+      s = s.slice(0, firstDot + 1) + s.slice(firstDot + 1).replace(/\./g, "");
+    }
+    // Limit to 2 decimal places
+    if (s.includes(".")) {
+      const [int, dec] = s.split(".");
+      s = int + "." + (dec || "").slice(0, 2);
+    }
+    return s;
+  }
   const [orderDiscountType, setOrderDiscountType] = useState<FeeType>("amount");
   const [serviceFeeType, setServiceFeeType] = useState<FeeType>("amount");
   const [deliveryFeeType, setDeliveryFeeType] = useState<FeeType>("amount");
 
   useEffect(() => {
     if (isOpen) {
-      setLocalOrderDiscount(orderDiscount);
-      setLocalServiceFee(serviceFee);
-      setLocalDeliveryFee(deliveryFee);
+      setLocalOrderDiscount(String(orderDiscount));
+      setLocalServiceFee(String(serviceFee));
+      setLocalDeliveryFee(String(deliveryFee));
     }
   }, [isOpen, orderDiscount, serviceFee, deliveryFee]);
 
@@ -47,32 +66,38 @@ export function FeesConfigModal({
     return (percentage / 100) * base;
   };
 
-  const calculatePercentageFromAmount = (amount: number, base: number) => {
+  const calculatePercentageFromAmount = (amountStr: string, base: number) => {
+    const amount = parseFloat(amountStr) || 0;
     return base > 0 ? (amount / base) * 100 : 0;
   };
-
-  const handleOrderDiscountChange = (value: number) => {
-    setLocalOrderDiscount(value);
+  const handleOrderDiscountChange = (value: string) => {
+    const cleaned = sanitizeNumericInput(value);
+    setLocalOrderDiscount(cleaned);
   };
 
-  const handleServiceFeeChange = (value: number) => {
-    setLocalServiceFee(value);
+  const handleServiceFeeChange = (value: string) => {
+    const cleaned = sanitizeNumericInput(value);
+    setLocalServiceFee(cleaned);
   };
 
-  const handleDeliveryFeeChange = (value: number) => {
-    setLocalDeliveryFee(value);
+  const handleDeliveryFeeChange = (value: string) => {
+    const cleaned = sanitizeNumericInput(value);
+    setLocalDeliveryFee(cleaned);
   };
 
   const handleOrderDiscountTypeChange = (type: FeeType) => {
     if (orderDiscountType === "amount" && type === "percentage") {
       const percentage = calculatePercentageFromAmount(
         localOrderDiscount,
-        subtotal
+        subtotal,
       );
-      setLocalOrderDiscount(percentage);
+      setLocalOrderDiscount(String(Number(percentage.toFixed(2))));
     } else if (orderDiscountType === "percentage" && type === "amount") {
-      const amount = calculateFromPercentage(localOrderDiscount, subtotal);
-      setLocalOrderDiscount(amount);
+      const amount = calculateFromPercentage(
+        parseFloat(localOrderDiscount || "0"),
+        subtotal,
+      );
+      setLocalOrderDiscount(String(Number(amount.toFixed(2))));
     }
     setOrderDiscountType(type);
   };
@@ -81,12 +106,15 @@ export function FeesConfigModal({
     if (serviceFeeType === "amount" && type === "percentage") {
       const percentage = calculatePercentageFromAmount(
         localServiceFee,
-        subtotal
+        subtotal,
       );
-      setLocalServiceFee(percentage);
+      setLocalServiceFee(String(Number(percentage.toFixed(2))));
     } else if (serviceFeeType === "percentage" && type === "amount") {
-      const amount = calculateFromPercentage(localServiceFee, subtotal);
-      setLocalServiceFee(amount);
+      const amount = calculateFromPercentage(
+        parseFloat(localServiceFee || "0"),
+        subtotal,
+      );
+      setLocalServiceFee(String(Number(amount.toFixed(2))));
     }
     setServiceFeeType(type);
   };
@@ -95,17 +123,21 @@ export function FeesConfigModal({
     if (deliveryFeeType === "amount" && type === "percentage") {
       const percentage = calculatePercentageFromAmount(
         localDeliveryFee,
-        subtotal
+        subtotal,
       );
-      setLocalDeliveryFee(percentage);
+      setLocalDeliveryFee(String(Number(percentage.toFixed(2))));
     } else if (deliveryFeeType === "percentage" && type === "amount") {
-      const amount = calculateFromPercentage(localDeliveryFee, subtotal);
-      setLocalDeliveryFee(amount);
+      const amount = calculateFromPercentage(
+        parseFloat(localDeliveryFee || "0"),
+        subtotal,
+      );
+      setLocalDeliveryFee(String(Number(amount.toFixed(2))));
     }
     setDeliveryFeeType(type);
   };
 
-  const getAmountValue = (value: number, type: FeeType) => {
+  const getAmountValue = (valueStr: string, type: FeeType) => {
+    const value = parseFloat(valueStr) || 0;
     if (type === "percentage") {
       return calculateFromPercentage(value, subtotal);
     }
@@ -115,7 +147,7 @@ export function FeesConfigModal({
   const handleApply = () => {
     const finalOrderDiscount = getAmountValue(
       localOrderDiscount,
-      orderDiscountType
+      orderDiscountType,
     );
     const finalServiceFee = getAmountValue(localServiceFee, serviceFeeType);
     const finalDeliveryFee = getAmountValue(localDeliveryFee, deliveryFeeType);
@@ -130,9 +162,9 @@ export function FeesConfigModal({
   };
 
   const handleReset = () => {
-    setLocalOrderDiscount(0);
-    setLocalServiceFee(0);
-    setLocalDeliveryFee(0);
+    setLocalOrderDiscount("0");
+    setLocalServiceFee("0");
+    setLocalDeliveryFee("0");
     setOrderDiscountType("amount");
     setServiceFeeType("amount");
     setDeliveryFeeType("amount");
@@ -154,6 +186,7 @@ export function FeesConfigModal({
             </label>
             <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
               <button
+                type="button"
                 onClick={() => handleOrderDiscountTypeChange("amount")}
                 className={`px-3 py-1 rounded text-sm font-medium transition ${
                   orderDiscountType === "amount"
@@ -164,6 +197,7 @@ export function FeesConfigModal({
                 Fixed
               </button>
               <button
+                type="button"
                 onClick={() => handleOrderDiscountTypeChange("percentage")}
                 className={`px-3 py-1 rounded text-sm font-medium transition ${
                   orderDiscountType === "percentage"
@@ -180,17 +214,17 @@ export function FeesConfigModal({
               {orderDiscountType === "percentage" ? "%" : "₱"}
             </span>
             <input
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={localOrderDiscount}
-              onChange={(e) =>
-                handleOrderDiscountChange(
-                  Math.max(0, parseFloat(e.target.value) || 0)
-                )
-              }
+              onPaste={(e) => {
+                const text = e.clipboardData.getData("text");
+                e.preventDefault();
+                handleOrderDiscountChange(text);
+              }}
+              onChange={(e) => handleOrderDiscountChange(e.target.value)}
               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-right"
               placeholder="0.00"
-              min="0"
-              step="0.01"
             />
           </div>
         </div>
@@ -203,6 +237,7 @@ export function FeesConfigModal({
             </label>
             <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
               <button
+                type="button"
                 onClick={() => handleServiceFeeTypeChange("amount")}
                 className={`px-3 py-1 rounded text-sm font-medium transition ${
                   serviceFeeType === "amount"
@@ -213,6 +248,7 @@ export function FeesConfigModal({
                 Fixed
               </button>
               <button
+                type="button"
                 onClick={() => handleServiceFeeTypeChange("percentage")}
                 className={`px-3 py-1 rounded text-sm font-medium transition ${
                   serviceFeeType === "percentage"
@@ -229,17 +265,17 @@ export function FeesConfigModal({
               {serviceFeeType === "percentage" ? "%" : "₱"}
             </span>
             <input
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={localServiceFee}
-              onChange={(e) =>
-                handleServiceFeeChange(
-                  Math.max(0, parseFloat(e.target.value) || 0)
-                )
-              }
+              onPaste={(e) => {
+                const text = e.clipboardData.getData("text");
+                e.preventDefault();
+                handleServiceFeeChange(text);
+              }}
+              onChange={(e) => handleServiceFeeChange(e.target.value)}
               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-right"
               placeholder="0.00"
-              min="0"
-              step="0.01"
             />
           </div>
         </div>
@@ -252,6 +288,7 @@ export function FeesConfigModal({
             </label>
             <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
               <button
+                type="button"
                 onClick={() => handleDeliveryFeeTypeChange("amount")}
                 className={`px-3 py-1 rounded text-sm font-medium transition ${
                   deliveryFeeType === "amount"
@@ -262,6 +299,7 @@ export function FeesConfigModal({
                 Fixed
               </button>
               <button
+                type="button"
                 onClick={() => handleDeliveryFeeTypeChange("percentage")}
                 className={`px-3 py-1 rounded text-sm font-medium transition ${
                   deliveryFeeType === "percentage"
@@ -278,17 +316,17 @@ export function FeesConfigModal({
               {deliveryFeeType === "percentage" ? "%" : "₱"}
             </span>
             <input
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={localDeliveryFee}
-              onChange={(e) =>
-                handleDeliveryFeeChange(
-                  Math.max(0, parseFloat(e.target.value) || 0)
-                )
-              }
+              onPaste={(e) => {
+                const text = e.clipboardData.getData("text");
+                e.preventDefault();
+                handleDeliveryFeeChange(text);
+              }}
+              onChange={(e) => handleDeliveryFeeChange(e.target.value)}
               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-right"
               placeholder="0.00"
-              min="0"
-              step="0.01"
             />
           </div>
         </div>

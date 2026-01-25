@@ -10,6 +10,7 @@ import type { Role } from "@/api/rolesApi";
 import { showToast } from "@/lib/toast";
 import { useOptions } from "@/context/OptionsProvider";
 import PermissionsModal from "@/components/modals/PermissionsModal";
+import { formatApiError, extractValidationErrors } from "@/lib/apiError";
 
 interface RoleFormModalProps {
   isOpen: boolean;
@@ -49,15 +50,6 @@ export function RoleFormModal({
     }
   }, [isOpen, role]);
 
-  const togglePermission = (p: string) => {
-    setForm((prev: any) => {
-      const set = new Set(prev.permissions || []);
-      if (set.has(p)) set.delete(p);
-      else set.add(p);
-      return { ...prev, permissions: Array.from(set) };
-    });
-  };
-
   const validate = (): boolean => {
     try {
       roleFormSchema.parse(form);
@@ -82,8 +74,12 @@ export function RoleFormModal({
       onClose();
     } catch (err: any) {
       console.error("Failed to save role:", err);
-      showToast.error(err?.message || "Failed to save role");
-      setErrors({ submit: String(err?.message || "Failed to save role") });
+      const msg = formatApiError(err);
+      showToast.error(msg);
+      // Prefer structured validation errors when available
+      const validation = extractValidationErrors(err);
+      if (validation) setErrors(validation);
+      else setErrors({ submit: msg });
       throw err;
     } finally {
       setIsSaving(false);
@@ -145,9 +141,6 @@ export function RoleFormModal({
                     Active
                   </label>
                 </div>
-                {errors.submit && (
-                  <p className="text-sm text-red-600">{errors.submit}</p>
-                )}
               </div>
             </div>
           </section>
@@ -194,6 +187,10 @@ export function RoleFormModal({
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 bg-white sticky pb-1 bottom-0">
+          {errors.submit && (
+            <p className="text-sm text-red-600">{errors.submit}</p>
+          )}
+
           <Button onClick={onClose} variant="outline" disabled={isSaving}>
             Cancel
           </Button>

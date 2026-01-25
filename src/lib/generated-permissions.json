@@ -20,18 +20,8 @@
   "ORDERS:CREATE",
   "ORDERS:EDIT",
   "ORDERS:MANAGE",
+  "TRANSACTIONS:VIEW",
   "REPORTS:VIEW",
   "SETTINGS:VIEW",
-  "SETTINGS:MANAGE",
-  "PRODUCTS:*",
-  "USERS:*",
-  "ROLES:*",
-  "ORDERS:*",
-  "*:MANAGE",
-  "*:VIEW",
-  "*:CREATE",
-  "*:EDIT",
-  "*:DELETE",
-  "*:ORDER",
-  "*"
+  "SETTINGS:MANAGE"
 ]
