@@ -12,6 +12,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { userFormSchema } from "@/pages/users/schema";
 import RoleFormModal from "@/components/modals/RoleFormModal";
+import PermissionsModal from "@/components/modals/PermissionsModal";
 import { ALL_PERMISSIONS } from "@/lib/generated-permissions";
 import { modules } from "@/lib/permission/permissions";
 import { getUser } from "@/api/usersApi";
@@ -52,6 +53,8 @@ export function UserFormModal({
   >({});
   const [isLoadingOverrides, setIsLoadingOverrides] = useState(false);
   const [isRoleEditorOpen, setIsRoleEditorOpen] = useState(false);
+  const [isPermsOpen, setIsPermsOpen] = useState(false);
+  const [isPermsRoleOpen, setIsPermsRoleOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -256,10 +259,21 @@ export function UserFormModal({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setIsRoleEditorOpen(true)}
+                  onClick={() =>
+                    formData.roleId
+                      ? setIsPermsRoleOpen(true)
+                      : setIsRoleEditorOpen(true)
+                  }
                   className="text-sm text-primary hover:underline"
                 >
                   Edit role permissions
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsRoleEditorOpen(true)}
+                  className="text-sm text-gray-600 hover:underline"
+                >
+                  Edit role
                 </button>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -453,9 +467,6 @@ export function UserFormModal({
                   </label>
                 </div>
               </div>
-              {errors.submit && (
-                <p className="text-sm text-red-600 mt-3">{errors.submit}</p>
-              )}
             </div>
           </section>
 
@@ -475,101 +486,72 @@ export function UserFormModal({
               {isLoadingOverrides ? (
                 <p className="text-sm text-gray-500">Loading permissions…</p>
               ) : (
-                <div className="space-y-4 max-h-64 overflow-auto pr-2">
-                  {(modules || []).map((m) => {
-                    const perms = (ALL_PERMISSIONS as readonly string[]).filter(
-                      (p) => p.split(":")[0] === m && !p.includes("*")
-                    );
-                    if (perms.length === 0) return null;
-                    const rolePerms = getRolePermissions();
-                    return (
-                      <div
-                        key={m}
-                        className="rounded-xl p-4 bg-primary/10 shadow-sm"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <strong className="text-sm text-primary">{m}</strong>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          {perms.map((p) => {
-                            const state = userOverrides[p];
-                            const roleHas = rolePerms.includes(p);
-                            const effective = state !== null ? state : roleHas;
-                            return (
-                              <div
-                                key={p}
-                                className="flex items-center justify-between gap-4 p-3 rounded-lg hover:bg-primary/20"
-                              >
-                                <div className="text-sm text-gray-700">
-                                  {p.split(":")[1]}
-                                  <div className="text-xs text-gray-400">
-                                    {p}
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <div className="flex items-center gap-2">
-                                    {roleHas && (
-                                      <span className="text-xs px-2 py-0.5 rounded bg-white text-primary">
-                                        role
-                                      </span>
-                                    )}
-                                    <button
-                                      type="button"
-                                      onClick={() => cycleOverride(p)}
-                                      disabled={isSaving}
-                                      className={`text-sm px-2 py-1 rounded-md font-medium ${
-                                        state === true
-                                          ? "bg-green-600 text-white"
-                                          : state === false
-                                          ? "bg-red-600 text-white"
-                                          : effective
-                                          ? "bg-green-100 text-green-700"
-                                          : "bg-gray-100 text-gray-700"
-                                      }`}
-                                      title={
-                                        state === true
-                                          ? "Explicitly allowed"
-                                          : state === false
-                                          ? "Explicitly denied"
-                                          : effective
-                                          ? "Inherit (allowed by role)"
-                                          : "Inherit (not allowed)"
-                                      }
-                                    >
-                                      {state === true
-                                        ? "Allow"
-                                        : state === false
-                                        ? "Deny"
-                                        : effective
-                                        ? "Inherit (Yes)"
-                                        : "Inherit (No)"}
-                                    </button>
-                                    {state !== null && (
-                                      <button
-                                        type="button"
-                                        onClick={() => resetOverride(p)}
-                                        disabled={isSaving}
-                                        className="text-xs text-gray-500 hover:text-gray-700"
-                                        title="Reset to inherit"
-                                      >
-                                        Reset
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })}
+                <div className="flex flex-col justify-between">
+                  <div className="flex items-center gap-2 mt-4">
+                    <Button
+                      type="button"
+                      size="lg"
+                      onClick={() => setIsPermsOpen(true)}
+                      className="text-sm text-primary"
+                    >
+                      Edit permissions
+                    </Button>
+                    <span className="text-sm text-gray-600">
+                      (
+                      {
+                        Object.values(userOverrides || {}).filter(
+                          (v) => v !== null,
+                        ).length
+                      }{" "}
+                      overrides)
+                    </span>
+                  </div>
                 </div>
               )}
+
+              <PermissionsModal
+                isOpen={isPermsOpen}
+                onClose={() => setIsPermsOpen(false)}
+                mode="user"
+                initialOverrides={userOverrides}
+                rolePermissions={getRolePermissions()}
+                onSave={(ovrs: Record<string, boolean | null>) =>
+                  setUserOverrides(ovrs)
+                }
+              />
+
+              <PermissionsModal
+                isOpen={isPermsRoleOpen}
+                onClose={() => setIsPermsRoleOpen(false)}
+                mode="role"
+                initialPermissions={getRolePermissions()}
+                onSave={async (perms: string[]) => {
+                  if (!formData.roleId) {
+                    showToast.error("No role selected");
+                    return;
+                  }
+                  try {
+                    await updateRole(formData.roleId, { permissions: perms });
+                    await refreshRoles({ force: true });
+                    showToast.success("Role permissions saved");
+                    setIsPermsRoleOpen(false);
+                  } catch (err: any) {
+                    console.error("Failed to save role permissions:", err);
+                    showToast.error(
+                      err?.message || "Failed to save role permissions",
+                    );
+                    throw err;
+                  }
+                }}
+              />
             </div>
           </section>
         </div>
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 bg-white sticky pb-1 bottom-0">
+          {errors.submit && (
+            <p className="text-sm text-red-600 mt-3">{errors.submit}</p>
+          )}
+
           <Button onClick={onClose} variant="outline" disabled={isSaving}>
             Cancel
           </Button>

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import LoginPage from "./pages/Login";
 import RegisterPage from "./pages/Register";
 import DashboardPage from "./pages/Dashboard";
@@ -58,6 +58,20 @@ function App() {
   }, [currentUser, hasAdmin]);
 
   const userFetched = useRef(false);
+  const navigate = useNavigate();
+  const pathname = useLocation().pathname;
+
+  // Redirect to login if there's no authenticated user (normal app flow)
+  useEffect(() => {
+    if (initLoading) return; // don't redirect while initializing
+    if (!hasAdmin) return; // allow register flow during initial setup
+
+    if (!currentUser) {
+      if (pathname !== "/login" && pathname !== "/register") {
+        navigate("/login", { replace: true });
+      }
+    }
+  }, [initLoading, hasAdmin, currentUser, navigate, pathname]);
 
   useEffect(() => {
     // Fetch current user on mount (only when admin exists)

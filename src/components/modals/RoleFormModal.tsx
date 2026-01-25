@@ -6,11 +6,10 @@ import { Button } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { InformationCircleIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { roleFormSchema } from "@/pages/roles/schema";
-import { modules } from "@/lib/permission/permissions";
-import { ALL_PERMISSIONS } from "@/lib/generated-permissions";
 import type { Role } from "@/api/rolesApi";
 import { showToast } from "@/lib/toast";
 import { useOptions } from "@/context/OptionsProvider";
+import PermissionsModal from "@/components/modals/PermissionsModal";
 
 interface RoleFormModalProps {
   isOpen: boolean;
@@ -34,6 +33,7 @@ export function RoleFormModal({
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { refreshRoles } = useOptions();
+  const [isPermsOpen, setIsPermsOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -164,43 +164,31 @@ export function RoleFormModal({
               </p>
             </div>
             <div className="w-[70%]">
-              <div className="space-y-4 max-h-72 overflow-auto pr-2">
-                {(modules || []).map((m) => {
-                  const perms = (ALL_PERMISSIONS as readonly string[]).filter(
-                    (p) => p.split(":")[0] === m && !p.includes("*")
-                  );
-                  if (perms.length === 0) return null;
-                  return (
-                    <div
-                      key={m}
-                      className="rounded-xl p-4 bg-primary/10 shadow-sm"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <strong className="text-sm text-primary">{m}</strong>
-                      </div>
-                      <div className="grid grid-cols-3 gap-3">
-                        {perms.map((p) => (
-                          <label
-                            key={p}
-                            className="flex items-center gap-2 p-3 rounded-lg hover:bg-primary/20"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={(form.permissions || []).includes(p)}
-                              onChange={() => togglePermission(p)}
-                              className="w-4 h-4"
-                            />
-                            <div className="text-sm text-gray-700">
-                              {p.split(":")[1]}
-                              <div className="text-xs text-gray-400">{p}</div>
-                            </div>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="flex flex-col justify-between mb-3">
+                <div className="flex items-center gap-2 mt-4">
+                  <Button
+                    type="button"
+                    size="lg"
+                    onClick={() => setIsPermsOpen(true)}
+                    className="text-sm text-primary"
+                  >
+                    Edit permissions
+                  </Button>
+                  <span className="text-sm text-gray-600">
+                    ({(form.permissions || []).length} selected)
+                  </span>
+                </div>
               </div>
+
+              <PermissionsModal
+                isOpen={isPermsOpen}
+                onClose={() => setIsPermsOpen(false)}
+                mode="role"
+                initialPermissions={(form.permissions || []) as string[]}
+                onSave={(perms: string[]) =>
+                  setForm((p: any) => ({ ...p, permissions: perms }))
+                }
+              />
             </div>
           </section>
         </div>
