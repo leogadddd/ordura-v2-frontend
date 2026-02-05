@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   ChevronRightIcon,
@@ -11,9 +10,10 @@ import { useAuthStore } from "@/store/authStore";
 import { logout } from "@/api/authApi";
 import { items } from "../../routes";
 import { Logo } from "@/components/ui/Logo";
+import { useSidebar } from "@/context/SidebarProvider";
 
 export function Sidebar() {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const { isExpanded, toggleExpanded, setCurrentRoute } = useSidebar();
   // hover-based popovers used for folder-like items
   const user = useAuthStore((state) => state.user);
   const hasPermission = useAuthStore((state) => state.hasPermission);
@@ -98,7 +98,7 @@ export function Sidebar() {
       >
         <div className="mb-1">
           <button
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={toggleExpanded}
             className={`flex items-center gap-2.5 rounded-xl h-12 text-gray-600 hover:bg-primary-pale ${
               isExpanded ? "px-2 w-full" : "w-10.5 px-2 justify-center"
             }`}
@@ -165,7 +165,10 @@ export function Sidebar() {
                                     <NavLink
                                       key={child.to}
                                       to={child.to!}
-                                      onClick={() => close()}
+                                      onClick={() => {
+                                        close();
+                                        setCurrentRoute(child.to!);
+                                      }}
                                       className={({ isActive }) =>
                                         `flex items-center gap-2.5 h-12 px-4 text-sm ${
                                           isActive
@@ -192,6 +195,7 @@ export function Sidebar() {
                         <NavLink
                           key={item.to}
                           to={item.to!}
+                          onClick={() => setCurrentRoute(item.to!)}
                           className={({ isActive }) =>
                             `flex items-center gap-2.5 rounded-xl h-12 px-3 ${
                               isActive
@@ -290,6 +294,7 @@ export function Sidebar() {
                   <NavLink
                     key={toPath}
                     to={toPath}
+                    onClick={() => setCurrentRoute(toPath)}
                     className={({ isActive }) =>
                       `flex items-center gap-2.5 rounded-xl h-12 ${
                         isExpanded ? "px-3" : "w-11 px-3"
@@ -317,6 +322,7 @@ export function Sidebar() {
               <NavLink
                 key={item.to!}
                 to={item.to!}
+                onClick={() => setCurrentRoute(item.to!)}
                 className={({ isActive }) =>
                   `flex items-center gap-2.5 rounded-xl h-12 ${
                     isExpanded ? "px-3" : "w-11 px-3"

@@ -47,11 +47,6 @@ export function Logo({
     xl: "text-xl",
   };
 
-  const textClass =
-    typeof size === "string" && size in textSizeClassMap
-      ? textSizeClassMap[size]
-      : undefined;
-
   let textStyle: { fontSize?: string } | undefined;
   if (typeof size === "number") {
     // make the text roughly half the logo size, with a minimum
