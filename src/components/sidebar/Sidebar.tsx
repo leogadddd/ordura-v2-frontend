@@ -9,7 +9,7 @@ import {
 import { Popover } from "@/components/ui/Popover";
 import { useAuthStore } from "@/store/authStore";
 import { logout } from "@/api/authApi";
-import { items } from "./nav.items";
+import { items } from "../../routes";
 import { Logo } from "@/components/ui/Logo";
 
 export function Sidebar() {
@@ -100,7 +100,7 @@ export function Sidebar() {
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className={`flex items-center gap-2.5 rounded-xl h-12 text-gray-600 hover:bg-primary-pale ${
-              isExpanded ? "px-2 w-full" : "w-[42px] px-2 justify-center"
+              isExpanded ? "px-2 w-full" : "w-10.5 px-2 justify-center"
             }`}
             title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
           >
