@@ -1,20 +1,16 @@
-import { useEffect, useState, useRef } from "react";
-import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
-import LoginPage from "./pages/Login";
-import RegisterPage from "./pages/Register";
-import DashboardPage from "./pages/Dashboard";
-import POSPage from "./pages/POS";
-import ProductsPage from "./pages/products";
-import OrdersPage from "./pages/orders";
-import SalesTransactionPage from "./pages/transactions/salesTransactions";
-import CashTransactionPage from "./pages/transactions/cashTransactions";
-import RolesPage from "./pages/roles";
-import SettingsPage from "./pages/Settings";
-import AccountPage from "./pages/Account";
-import UsersPage from "./pages/users";
-import AppLayout from "./layouts/AppLayout";
+import { useEffect, useState, useRef, Suspense } from "react";
+import {
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
+import { routes } from "./routes";
 import { useAuthStore } from "./store/authStore";
 import { getCurrentUser, checkInitStatus } from "./api/authApi";
+import Loading from "./components/Loading";
+import AppLayout from "./layouts/AppLayout";
 
 function App() {
   const setUser = useAuthStore((state) => state.setUser);
@@ -98,24 +94,28 @@ function App() {
 
   // Show loading while checking initialization
   if (initLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Initializing...</p>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   // If no admin exists, only show register page
   if (!hasAdmin) {
     return (
       <Routes>
-        <Route
-          path="/register"
-          element={<RegisterPage isInitialSetup={true} />}
-        />
+        {[...routes.essentials].map((route) => (
+          <Route
+            key={route.to}
+            path={route.to}
+            element={
+              <Suspense fallback={<Loading />}>
+                {route.component ? (
+                  <route.component />
+                ) : (
+                  <div>Page not found</div>
+                )}
+              </Suspense>
+            }
+          />
+        ))}
         <Route path="*" element={<Navigate to="/register" replace />} />
       </Routes>
     );
@@ -130,100 +130,38 @@ function App() {
   // Normal app flow when admin exists
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route
-        path="/register"
-        element={<RegisterPage isInitialSetup={false} />}
-      />
-      <Route
-        path="/dashboard"
-        element={
-          <AppLayout>
-            <DashboardPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/pos"
-        element={
-          <AppLayout>
-            <POSPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/products"
-        element={
-          <AppLayout>
-            <ProductsPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/users"
-        element={
-          <AppLayout>
-            <UsersPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/roles"
-        element={
-          <AppLayout>
-            <RolesPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/orders"
-        element={
-          <AppLayout>
-            <OrdersPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/transactions"
-        element={
-          <AppLayout>
-            <SalesTransactionPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/transactions/sales"
-        element={
-          <AppLayout>
-            <SalesTransactionPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/transactions/cash"
-        element={
-          <AppLayout>
-            <CashTransactionPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <AppLayout>
-            <SettingsPage />
-          </AppLayout>
-        }
-      />
-      <Route
-        path="/account"
-        element={
-          <AppLayout>
-            <AccountPage />
-          </AppLayout>
-        }
-      />
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      {[...routes.essentials].map((route) => (
+        <Route
+          key={route.to}
+          path={route.to}
+          element={
+            <Suspense fallback={<Loading />}>
+              {route.component ? (
+                <route.component />
+              ) : (
+                <div>Page not found</div>
+              )}
+            </Suspense>
+          }
+        />
+      ))}
+      {[...routes.top, ...routes.bottom].map((route) => (
+        <Route
+          key={route.to}
+          path={route.to}
+          element={
+            <Suspense fallback={<Loading />}>
+              <AppLayout>
+                {route.component ? (
+                  <route.component />
+                ) : (
+                  <div>Page not found</div>
+                )}
+              </AppLayout>
+            </Suspense>
+          }
+        />
+      ))}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );

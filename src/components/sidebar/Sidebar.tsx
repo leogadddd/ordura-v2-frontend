@@ -8,7 +8,7 @@ import {
 import { Popover } from "@/components/ui/Popover";
 import { useAuthStore } from "@/store/authStore";
 import { logout } from "@/api/authApi";
-import { items } from "../../routes";
+import { routes } from "../../routes";
 import { Logo } from "@/components/ui/Logo";
 import { useSidebar } from "@/context/SidebarProvider";
 
@@ -20,11 +20,11 @@ export function Sidebar() {
   const clearUser = useAuthStore((state) => state.clearUser);
   const navigate = useNavigate();
 
-  const filteredTopItems = items.top.filter(
+  const filteredTopItems = routes.top.filter(
     (item) => !item.permission || hasPermission(item.permission),
   );
 
-  const filteredBottomItems = items.bottom.filter(
+  const filteredBottomItems = routes.bottom.filter(
     (item) => !item.permission || hasPermission(item.permission),
   );
 
@@ -147,7 +147,7 @@ export function Sidebar() {
                                   className={`flex items-center gap-2.5 rounded-xl h-12 px-3 w-full text-gray-600 hover:bg-primary-pale`}
                                   title={item.label}
                                 >
-                                  <Icon className="w-5 h-5" />
+                                  {Icon && <Icon className="w-5 h-5" />}
                                   <span className="text-sm font-medium">
                                     {item.label}
                                   </span>
@@ -177,7 +177,9 @@ export function Sidebar() {
                                         }`
                                       }
                                     >
-                                      <ChildIcon className="w-4 h-4" />
+                                      {ChildIcon && (
+                                        <ChildIcon className="w-4 h-4" />
+                                      )}
                                       <span className="truncate">
                                         {child.label}
                                       </span>
@@ -205,7 +207,7 @@ export function Sidebar() {
                           }
                           title={!isExpanded ? item.label : undefined}
                         >
-                          <Icon className="w-5 h-5" />
+                          {Icon && <Icon className="w-5 h-5" />}
                           <span className="text-sm font-medium">
                             {item.label}
                           </span>
@@ -244,7 +246,7 @@ export function Sidebar() {
                               }
                               title={!isExpanded ? item.label : undefined}
                             >
-                              <Icon className="w-5 h-5" />
+                              {Icon && <Icon className="w-5 h-5" />}
                               <ChevronRightIcon className="w-3 h-3 absolute top-4.5 right-0" />
                             </NavLink>
                           ) : (
@@ -255,7 +257,7 @@ export function Sidebar() {
                               title={!isExpanded ? item.label : undefined}
                               aria-hidden
                             >
-                              <Icon className="w-5 h-5" />
+                              {Icon && <Icon className="w-5 h-5" />}
                               <ChevronRightIcon className="w-3 h-3 absolute top-4.5 right-0" />
                             </div>
                           )}
@@ -279,7 +281,7 @@ export function Sidebar() {
                                   }`
                                 }
                               >
-                                <ChildIcon className="w-4 h-4" />
+                                {ChildIcon && <ChildIcon className="w-4 h-4" />}
                                 <span className="truncate">{child.label}</span>
                               </NavLink>
                             );
@@ -306,7 +308,7 @@ export function Sidebar() {
                     }
                     title={!isExpanded ? item.label : undefined}
                   >
-                    <Icon className="w-5 h-5" />
+                    {Icon && <Icon className="w-5 h-5" />}
                     {isExpanded && (
                       <span className="text-sm font-medium">{item.label}</span>
                     )}
@@ -334,7 +336,7 @@ export function Sidebar() {
                 }
                 title={!isExpanded ? item.label : undefined}
               >
-                <Icon className="w-5 h-5" />
+                {Icon && <Icon className="w-5 h-5" />}
                 {isExpanded && (
                   <span className="text-sm font-medium">{item.label}</span>
                 )}

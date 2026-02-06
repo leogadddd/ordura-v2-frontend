@@ -1,3 +1,4 @@
+import React, { lazy } from "react";
 import { makePermission } from "@/lib/permission/permissions";
 import {
   Apple,
@@ -12,21 +13,43 @@ import {
 } from "lucide-react";
 
 interface NavItem {
+  hidden?: boolean;
   label: string;
   to?: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   permission?: string;
   /** Optional grouping label for this item. When set, Sidebar will render items grouped by section. */
   section?: string;
   children?: NavItem[];
+  component?: React.ComponentType<any>;
 }
 
 interface NavigationItems {
+  essentials: NavItem[];
   top: NavItem[];
   bottom: NavItem[];
 }
 
 const navigationItems = () => {
+  const essentials: NavItem[] = [
+    {
+      label: "Login",
+      to: "/login",
+      component: lazy(() => import("./pages/Login")),
+    },
+    {
+      label: "Register",
+      to: "/register",
+      component: lazy(() => import("./pages/Register")),
+    },
+  ];
+
+  // We need to include the essential items in the navigation config so they can be
+  // rendered by the router, but they won't actually be shown in the sidebar because
+  // they don't have icons or permissions. The sidebar only renders items that have
+  // an icon and that the user has permission to see, so these will be effectively
+  // hidden from the sidebar while still being accessible routes in the app.
+
   const top: NavItem[] = [
     // NAVIGATION
     {
@@ -34,6 +57,7 @@ const navigationItems = () => {
       to: "/dashboard",
       icon: HomeIcon,
       section: "Navigation",
+      component: lazy(() => import("./pages/Dashboard")),
     },
     {
       label: "Point Of Sale",
@@ -41,6 +65,7 @@ const navigationItems = () => {
       icon: MonitorIcon,
       permission: makePermission("POS", "VIEW"),
       section: "Navigation",
+      component: lazy(() => import("./pages/POS")),
     },
     {
       label: "Products",
@@ -48,6 +73,7 @@ const navigationItems = () => {
       icon: Apple,
       permission: makePermission("PRODUCTS", "MANAGE"),
       section: "Navigation",
+      component: lazy(() => import("./pages/products")),
     },
     {
       label: "Orders",
@@ -55,6 +81,7 @@ const navigationItems = () => {
       icon: ScrollIcon,
       permission: makePermission("ORDERS", "VIEW"),
       section: "Navigation",
+      component: lazy(() => import("./pages/orders")),
     },
     {
       label: "Transactions",
@@ -67,11 +94,17 @@ const navigationItems = () => {
           label: "Sales Transaction",
           to: "/transactions/sales",
           icon: PackageIcon,
+          component: lazy(
+            () => import("./pages/transactions/salesTransactions"),
+          ),
         },
         {
           label: "Cash Transaction",
           to: "/transactions/cash",
           icon: Banknote,
+          component: lazy(
+            () => import("./pages/transactions/cashTransactions"),
+          ),
         },
       ],
     },
@@ -81,6 +114,7 @@ const navigationItems = () => {
       icon: Users,
       permission: makePermission("USERS", "MANAGE"),
       section: "User Management",
+      component: lazy(() => import("./pages/users")),
     },
     {
       label: "Roles",
@@ -88,6 +122,7 @@ const navigationItems = () => {
       icon: HardHat,
       permission: makePermission("ROLES", "MANAGE"),
       section: "User Management",
+      component: lazy(() => import("./pages/roles")),
     },
   ];
 
@@ -97,11 +132,12 @@ const navigationItems = () => {
       to: "/settings",
       icon: SettingsIcon,
       permission: makePermission("SETTINGS", "VIEW"),
+      component: lazy(() => import("./pages/Settings")),
     },
   ];
 
-  return { top, bottom } as NavigationItems;
+  return { essentials, top, bottom } as NavigationItems;
 };
 
 // Export the function call result directly
-export const items = navigationItems();
+export const routes = navigationItems();
