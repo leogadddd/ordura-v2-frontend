@@ -8,6 +8,8 @@ import { Cart } from "@/components/Cart";
 import { createOrder } from "@/api/createOrderApi";
 import { showToast } from "@/lib/toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Button } from "@/components/ui/Button";
+import { Car } from "lucide-react";
 
 interface CartItem {
   id: string;
@@ -262,7 +264,7 @@ export function POSPage() {
               Process customer transactions and manage orders.
             </p>
           </header> */}
-          <div className="mb-3 relative">
+          <div className="mb-3 relative flex items-center gap-2">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
@@ -271,6 +273,9 @@ export function POSPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl"
             />
+            <Button onClick={handlePlaceOrder} variant="secondary" size="sm">
+              <Car className="w-6 h-6" />
+            </Button>
           </div>
 
           {/* Category Filter Bar */}

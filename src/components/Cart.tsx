@@ -97,7 +97,9 @@ export function Cart({
   };
 
   return (
-    <div className="flex flex-col bg-gray-50 pb-4 border border-gray-200 min-h-0 h-full">
+    <div
+      className={`flex-col bg-gray-50 pb-4 border border-gray-200 min-h-0 h-full hidden md:flex`}
+    >
       <h2 className="text-lg font-bold p-4 pb-3">Cart</h2>
 
       <div className="flex-1 overflow-y-auto min-h-0">
