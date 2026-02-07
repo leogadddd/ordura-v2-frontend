@@ -164,10 +164,12 @@ export function Sidebar() {
                                   return (
                                     <NavLink
                                       key={child.to}
-                                      to={child.to!}
+                                      to={`${item.to}/${child.to}`}
                                       onClick={() => {
                                         close();
-                                        setCurrentRoute(child.to!);
+                                        setCurrentRoute(
+                                          `${item.to}/${child.to}`,
+                                        );
                                       }}
                                       className={({ isActive }) =>
                                         `flex items-center gap-2.5 h-12 px-4 text-sm ${
@@ -271,7 +273,7 @@ export function Sidebar() {
                             return (
                               <NavLink
                                 key={child.to}
-                                to={child.to!}
+                                to={`${item.to}/${child.to}`}
                                 onClick={() => close()}
                                 className={({ isActive }) =>
                                   `flex items-center gap-2.5 h-12 px-4 text-sm ${

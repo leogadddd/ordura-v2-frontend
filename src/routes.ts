@@ -85,14 +85,14 @@ const navigationItems = () => {
     },
     {
       label: "Transactions",
+      to: "/transactions",
       icon: Banknote,
-      // to: "/transactions",
       permission: makePermission("TRANSACTIONS", "VIEW"),
       section: "Navigation",
       children: [
         {
           label: "Sales Transaction",
-          to: "/transactions/sales",
+          to: "sales",
           icon: PackageIcon,
           component: lazy(
             () => import("./pages/transactions/salesTransactions"),
@@ -100,7 +100,7 @@ const navigationItems = () => {
         },
         {
           label: "Cash Transaction",
-          to: "/transactions/cash",
+          to: "cash",
           icon: Banknote,
           component: lazy(
             () => import("./pages/transactions/cashTransactions"),

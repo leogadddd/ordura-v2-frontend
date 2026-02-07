@@ -14,6 +14,7 @@ import { useProducts, useDeleteProduct } from "@/hooks/useProducts";
 import { showToast } from "@/lib/toast";
 import type { Product } from "@/api/productsApi";
 import { getProductColumnDefs } from "./column-def";
+import { useOptions } from "@/context/OptionsProvider";
 
 export function ProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,6 +30,7 @@ export function ProductsPage() {
   });
 
   const deleteProductMutation = useDeleteProduct();
+  const { fulfillmentTypes } = useOptions();
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
@@ -64,7 +66,7 @@ export function ProductsPage() {
         throw error;
       }
     },
-    [deleteProductMutation]
+    [deleteProductMutation],
   );
 
   const handleBulkDelete = useCallback(async () => {
@@ -76,11 +78,11 @@ export function ProductsPage() {
     try {
       await Promise.all(
         selectedRows.map((product) =>
-          deleteProductMutation.mutateAsync(product.id)
-        )
+          deleteProductMutation.mutateAsync(product.id),
+        ),
       );
       showToast.success(
-        `${selectedRows.length} products deleted successfully!`
+        `${selectedRows.length} products deleted successfully!`,
       );
       setSelectedRows([]);
       setIsBulkDeleteOpen(false);
@@ -104,8 +106,8 @@ export function ProductsPage() {
   };
 
   const columnDefs = useMemo(
-    () => getProductColumnDefs(handleEdit, handleDelete),
-    [handleEdit, handleDelete]
+    () => getProductColumnDefs(handleEdit, handleDelete, fulfillmentTypes),
+    [handleEdit, handleDelete, fulfillmentTypes],
   );
 
   const products = data?.data?.items || [];

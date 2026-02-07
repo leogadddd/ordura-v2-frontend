@@ -102,7 +102,16 @@ export function CheckoutModal({
         ? override.amount
         : parseFloat(amountReceived || "0");
     const method = override?.method ?? paymentMethod;
-    if (amount < totalAmount) return;
+    if (amount < totalAmount) {
+      // Shouldn't happen due to button disable, but guard just in case
+      try {
+        const { showToast } = await import("@/lib/toast");
+        showToast.error("Amount received is less than total");
+      } catch (e) {
+        console.error("Failed to show toast", e);
+      }
+      return;
+    }
 
     try {
       setIsProcessing(true);
@@ -112,7 +121,7 @@ export function CheckoutModal({
         const res = onConfirmPayment({
           method,
           amountReceived: amount,
-        }) as unknown;
+        }) as any;
 
         if (res && typeof (res as Promise<any>).then === "function") {
           returned = await (res as Promise<any>);
@@ -132,7 +141,7 @@ export function CheckoutModal({
       }
 
       setSuccessData({
-        orderId: returned?.data?.id || returned?.orderId || null,
+        orderId: returned?.data.orderNumber || null,
         method,
         amountReceived: amount,
         changeDue: Math.max(0, amount - totalAmount),

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/Button";
 import { MinusIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { FeesConfigModal } from "@/components/modals/FeesConfigModal";
+import { SlidePanel } from "@/components/ui/SlidePanel";
 
 interface CartItem {
   id: string;
@@ -24,6 +25,10 @@ interface CartProps {
   onOrderDiscountChange?: (value: number) => void;
   onServiceFeeChange?: (value: number) => void;
   onDeliveryFeeChange?: (value: number) => void;
+  isModal?: boolean;
+  onCloseModal?: () => void;
+  showHeader?: boolean;
+  showCloseButton?: boolean;
 }
 
 export function Cart({
@@ -39,6 +44,10 @@ export function Cart({
   onOrderDiscountChange,
   onServiceFeeChange,
   onDeliveryFeeChange,
+  isModal = false,
+  onCloseModal,
+  showHeader = true,
+  showCloseButton = true,
 }: CartProps) {
   const [itemToRemove, setItemToRemove] = useState<string | null>(null);
   const [isFeesModalOpen, setIsFeesModalOpen] = useState(false);
@@ -96,10 +105,8 @@ export function Cart({
     onDeliveryFeeChange?.(newDeliveryFee);
   };
 
-  return (
-    <div
-      className={`flex-col bg-gray-50 pb-4 border border-gray-200 min-h-0 h-full hidden md:flex`}
-    >
+  const cartContent = (
+    <div className="flex flex-col bg-gray-50 pb-4 border border-gray-200 min-h-0 h-full">
       <h2 className="text-lg font-bold p-4 pb-3">Cart</h2>
 
       <div className="flex-1 overflow-y-auto min-h-0">
@@ -271,6 +278,27 @@ export function Cart({
         confirmText="Remove"
         confirmVariant="danger"
       />
+    </div>
+  );
+
+  if (isModal) {
+    return (
+      <SlidePanel
+        isOpen={true}
+        onClose={onCloseModal || (() => {})}
+        title="Cart"
+        width="w-full sm:w-96"
+        showHeader={showHeader}
+        showCloseButton={showCloseButton}
+      >
+        {cartContent}
+      </SlidePanel>
+    );
+  }
+
+  return (
+    <div className={`${isModal ? "flex" : "hidden lg:flex"}`}>
+      {cartContent}
     </div>
   );
 }

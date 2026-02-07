@@ -9,7 +9,7 @@ import { createOrder } from "@/api/createOrderApi";
 import { showToast } from "@/lib/toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
-import { Car } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 
 interface CartItem {
   id: string;
@@ -31,6 +31,7 @@ export function POSPage() {
   } | null>(null);
   const [isAddToCartModalOpen, setIsAddToCartModalOpen] = useState(false);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fee state
@@ -255,7 +256,7 @@ export function POSPage() {
       />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 overflow-hidden h-full">
         {/* Products Section */}
-        <div className="lg:col-span-2 flex flex-col min-h-0 p-6">
+        <div className="lg:col-span-2 flex flex-col min-h-0 p-4">
           {/* <header className="mb-4">
             <h1 className="text-2xl font-semibold text-primary">
               Point of Sale
@@ -273,8 +274,13 @@ export function POSPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl"
             />
-            <Button onClick={handlePlaceOrder} variant="secondary" size="sm">
-              <Car className="w-6 h-6" />
+            <Button
+              onClick={() => setIsCartModalOpen(true)}
+              variant="secondary"
+              size="sm"
+              className="block lg:hidden border-none"
+            >
+              <ShoppingCart className="w-6 h-6" />
             </Button>
           </div>
 
@@ -332,7 +338,7 @@ export function POSPage() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
                 {filteredProducts.map((product) => (
                   <POSProductItem
                     key={product.id}
@@ -360,6 +366,27 @@ export function POSPage() {
           onServiceFeeChange={setServiceFee}
           onDeliveryFeeChange={setDeliveryFee}
         />
+
+        {/* Cart Modal for Mobile */}
+        {isCartModalOpen && (
+          <Cart
+            items={cart}
+            onUpdateQuantity={updateQuantity}
+            onRemove={removeFromCart}
+            onClear={clearCart}
+            onPlaceOrder={handlePlaceOrder}
+            onEditItem={handleEditItem}
+            orderDiscount={orderDiscount}
+            serviceFee={serviceFee}
+            deliveryFee={deliveryFee}
+            onOrderDiscountChange={setOrderDiscount}
+            onServiceFeeChange={setServiceFee}
+            onDeliveryFeeChange={setDeliveryFee}
+            isModal={true}
+            onCloseModal={() => setIsCartModalOpen(false)}
+            showHeader={false}
+          />
+        )}
 
         <ConfirmDialog
           isOpen={isNoPaymentConfirmOpen}

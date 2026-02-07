@@ -12,18 +12,16 @@ import type {
 import type { Product } from "@/api/productsApi";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Popover } from "@/components/ui/Popover";
-import { useOptions } from "@/context/OptionsProvider";
+import type { FulfillmentTypeOption } from "@/api/optionsApi";
 
 export type EditHandler = (product: Product) => void;
 export type DeleteHandler = (id: string) => void | Promise<void>;
 
 export function getProductColumnDefs(
   handleEdit: EditHandler,
-  handleDelete: DeleteHandler
+  handleDelete: DeleteHandler,
+  fulfillmentTypes: FulfillmentTypeOption[] | null,
 ): ColDef<Product>[] {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const { fulfillmentTypes } = useOptions();
-
   function getFulfillmentTypeName(typeId?: string): string {
     if (!typeId) return "-";
     return fulfillmentTypes?.find((ft) => ft.id === typeId)?.name || "Unknown";
@@ -201,8 +199,8 @@ export function getProductColumnDefs(
           status === "ACTIVE"
             ? "bg-green-100 text-green-700"
             : status === "INACTIVE"
-            ? "bg-gray-100 text-gray-700"
-            : "bg-red-100 text-red-700";
+              ? "bg-gray-100 text-gray-700"
+              : "bg-red-100 text-red-700";
 
         return (
           <span

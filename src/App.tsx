@@ -5,12 +5,50 @@ import {
   Navigate,
   useNavigate,
   useLocation,
+  Outlet,
 } from "react-router-dom";
 import { routes } from "./routes";
 import { useAuthStore } from "./store/authStore";
 import { getCurrentUser, checkInitStatus } from "./api/authApi";
 import Loading from "./components/Loading";
 import AppLayout from "./layouts/AppLayout";
+import PageNotFound from "./pages/PageNotFound";
+
+const renderRoutes = (items: typeof routes.top, isNested = false) => {
+  return items.map((item) => {
+    if (item.children) {
+      return (
+        <Route
+          key={item.to}
+          path={item.to}
+          element={
+            <Suspense fallback={<Loading />}>
+              <AppLayout>
+                {item.component ? <item.component /> : <Outlet />}
+              </AppLayout>
+            </Suspense>
+          }
+        >
+          <Route index element={<Navigate to="sales" replace />} />
+          {renderRoutes(item.children, true)}
+        </Route>
+      );
+    } else {
+      const element = (
+        <Suspense fallback={<Loading />}>
+          {item.component ? <item.component /> : <div>Page not found</div>}
+        </Suspense>
+      );
+      return (
+        <Route
+          key={item.to}
+          path={item.to}
+          element={isNested ? element : <AppLayout>{element}</AppLayout>}
+        />
+      );
+    }
+  });
+};
 
 function App() {
   const setUser = useAuthStore((state) => state.setUser);
@@ -116,7 +154,7 @@ function App() {
             }
           />
         ))}
-        <Route path="*" element={<Navigate to="/register" replace />} />
+        <Route path="*" element={<PageNotFound />} />
       </Routes>
     );
   }
@@ -145,24 +183,20 @@ function App() {
           }
         />
       ))}
-      {[...routes.top, ...routes.bottom].map((route) => (
-        <Route
-          key={route.to}
-          path={route.to}
-          element={
-            <Suspense fallback={<Loading />}>
-              <AppLayout>
-                {route.component ? (
-                  <route.component />
-                ) : (
-                  <div>Page not found</div>
-                )}
-              </AppLayout>
-            </Suspense>
-          }
-        />
-      ))}
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      {renderRoutes(routes.top)}
+      {renderRoutes(routes.bottom)}
+      <Route
+        path="*"
+        element={
+          currentUser ? (
+            <AppLayout>
+              <PageNotFound />
+            </AppLayout>
+          ) : (
+            <PageNotFound />
+          )
+        }
+      />
     </Routes>
   );
 }
