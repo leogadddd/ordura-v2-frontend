@@ -297,7 +297,7 @@ export function Cart({
   }
 
   return (
-    <div className={`${isModal ? "flex" : "hidden lg:flex"}`}>
+    <div className={`${isModal ? "flex" : "hidden lg:block"} h-full`}>
       {cartContent}
     </div>
   );
