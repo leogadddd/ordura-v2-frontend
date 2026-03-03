@@ -10,6 +10,7 @@ import { getSalesTransactionColumnDefs } from "./column-def";
 import { useSalesTransactions } from "@/hooks/useSalesTransactions";
 import type { SalesTransaction } from "@/api/salesTransactionsApi";
 import SalesTransactionViewModal from "./SalesTransactionViewModal";
+import { Page, PageHeader } from "@/components/layout/Page";
 
 export function SalesTransactionPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,49 +52,45 @@ export function SalesTransactionPage() {
 
   const columnDefs = useMemo(
     () => getSalesTransactionColumnDefs(openView),
-    [openView]
+    [openView],
   );
 
   return (
-    <div className="h-full flex flex-col p-6">
-      <header className="flex items-center justify-between mb-4 gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-primary">
-            Sales Transactions
-          </h1>
-          <p className="text-sm text-gray-600">
-            View and manage sales transactions.
-          </p>
-        </div>
-        <div className="flex items-center gap-3 flex-1 max-w-2xl">
-          <div className="relative flex-1">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
-            <input
-              type="text"
-              placeholder="Search transactions..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl"
-            />
-          </div>
-          <Button
-            onClick={handleRefresh}
-            variant="secondary"
-            size="md"
-            className="flex items-center gap-2 whitespace-nowrap h-10"
-            title="Refresh transactions"
-            disabled={isRefreshing}
-          >
-            <ArrowPathIcon
-              className="w-4 h-4"
-              style={{
-                animation: isRefreshing ? "spin 1s linear infinite" : "none",
-              }}
-            />
-            Refresh
-          </Button>
-        </div>
-      </header>
+    <Page className="gap-4">
+      <PageHeader
+        title="Sales Transactions"
+        subtitle="View and manage sales transactions."
+        actions={
+          <>
+            <div className="relative w-full sm:w-80 md:w-96">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+              <input
+                type="text"
+                placeholder="Search transactions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl"
+              />
+            </div>
+            <Button
+              onClick={handleRefresh}
+              variant="secondary"
+              size="md"
+              className="flex items-center gap-2 whitespace-nowrap h-10"
+              title="Refresh transactions"
+              disabled={isRefreshing}
+            >
+              <ArrowPathIcon
+                className="w-4 h-4"
+                style={{
+                  animation: isRefreshing ? "spin 1s linear infinite" : "none",
+                }}
+              />
+              Refresh
+            </Button>
+          </>
+        }
+      />
 
       <div
         className={`flex-1 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col transition-opacity ${
@@ -120,7 +117,7 @@ export function SalesTransactionPage() {
         id={selectedTxnId}
         onClose={closeView}
       />
-    </div>
+    </Page>
   );
 }
 

@@ -75,14 +75,14 @@ const navigationItems = () => {
       section: "Navigation",
       component: lazy(() => import("./pages/products")),
     },
-    {
-      label: "Orders",
-      to: "/orders",
-      icon: ScrollIcon,
-      permission: makePermission("ORDERS", "VIEW"),
-      section: "Navigation",
-      component: lazy(() => import("./pages/orders")),
-    },
+    // {
+    //   label: "Orders",
+    //   to: "/orders",
+    //   icon: ScrollIcon,
+    //   permission: makePermission("ORDERS", "VIEW"),
+    //   section: "Navigation",
+    //   component: lazy(() => import("./pages/orders")),
+    // },
     {
       label: "Transactions",
       to: "/transactions",

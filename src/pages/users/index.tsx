@@ -13,6 +13,7 @@ import { DataGrid } from "@/components/ui/DataGrid";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import UserFormModal from "@/components/modals/UserFormModal";
 import { getUserColumnDefs } from "./column-def";
+import { Page, PageHeader } from "@/components/layout/Page";
 
 export type UserRow = {
   id: string;
@@ -86,7 +87,7 @@ export function UsersPage() {
 
   const handleSelectionChanged = useCallback(
     (selected: UserRow[]) => setSelectedRows(selected),
-    []
+    [],
   );
 
   const handleBulkDelete = useCallback(async () => {
@@ -99,7 +100,7 @@ export function UsersPage() {
     try {
       await Promise.all(selectedRows.map((s) => deleteUser(s.id)));
       setUsers((prev) =>
-        prev.filter((u) => !selectedRows.some((s) => s.id === u.id))
+        prev.filter((u) => !selectedRows.some((s) => s.id === u.id)),
       );
       setSelectedRows([]);
       setIsBulkDeleteOpen(false);
@@ -123,7 +124,7 @@ export function UsersPage() {
           const updated = res?.data?.user;
           if (updated) {
             setUsers((prev) =>
-              prev.map((u) => (u.id === updated.id ? { ...u, ...updated } : u))
+              prev.map((u) => (u.id === updated.id ? { ...u, ...updated } : u)),
             );
             showToast.success("User updated");
           }
@@ -143,12 +144,12 @@ export function UsersPage() {
         throw err;
       }
     },
-    [selectedUser]
+    [selectedUser],
   );
 
   const columnDefs = useMemo(
     () => getUserColumnDefs(handleEdit, handleDelete, handleOpenChangePassword),
-    [handleEdit, handleDelete, handleOpenChangePassword]
+    [handleEdit, handleDelete, handleOpenChangePassword],
   );
 
   const filtered = users.filter((u) => {
@@ -160,55 +161,53 @@ export function UsersPage() {
   });
 
   return (
-    <div className="h-full flex flex-col p-6">
-      <header className="flex items-center justify-between mb-4 gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-primary">Users</h1>
-          <p className="text-sm text-gray-600">
-            Manage user accounts and roles.
-          </p>
-        </div>
-        <div className="flex items-center gap-3 flex-1 max-w-2xl">
-          <div className="relative flex-1">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
-            <input
-              type="text"
-              placeholder="Search users..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl"
-            />
-          </div>
-          <Button
-            onClick={handleRefresh}
-            variant="secondary"
-            size="md"
-            className="flex items-center gap-2 whitespace-nowrap h-10"
-            disabled={isRefreshing}
-          >
-            Refresh
-          </Button>
-          {selectedRows.length > 0 && (
+    <Page className="gap-4">
+      <PageHeader
+        title="Users"
+        subtitle="Manage user accounts and roles."
+        actions={
+          <>
+            <div className="relative w-full sm:w-80 md:w-96">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl"
+              />
+            </div>
             <Button
-              onClick={handleBulkDelete}
-              variant="destructive"
+              onClick={handleRefresh}
+              variant="secondary"
+              size="md"
+              className="whitespace-nowrap h-10"
+              disabled={isRefreshing}
+            >
+              Refresh
+            </Button>
+            {selectedRows.length > 0 && (
+              <Button
+                onClick={handleBulkDelete}
+                variant="destructive"
+                size="md"
+                className="flex items-center gap-2 whitespace-nowrap"
+              >
+                <TrashIcon className="w-4 h-4" /> Delete Selected (
+                {selectedRows.length})
+              </Button>
+            )}
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              variant="primary"
               size="md"
               className="flex items-center gap-2 whitespace-nowrap"
             >
-              <TrashIcon className="w-4 h-4" /> Delete Selected (
-              {selectedRows.length})
+              <PlusIcon className="w-4 h-4" /> Add User
             </Button>
-          )}
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            variant="primary"
-            size="md"
-            className="flex items-center gap-2 whitespace-nowrap"
-          >
-            <PlusIcon className="w-4 h-4" /> Add User
-          </Button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <div className="flex-1 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col">
         <DataGrid<UserRow>
@@ -245,7 +244,7 @@ export function UsersPage() {
         cancelText="Cancel"
         confirmVariant="danger"
       />
-    </div>
+    </Page>
   );
 }
 

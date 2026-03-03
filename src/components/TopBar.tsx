@@ -23,7 +23,7 @@ export function TopBar() {
   return (
     <div className="h-7 bg-topbar text-white flex items-center justify-between px-3 shadow-md">
       <div className="text-xs text-gray-300 text-center font-semibold">
-        {formattedTime} • {formattedDate}
+        {formattedDate} {formattedTime}
       </div>
       <div className="text-xs text-gray-300 text-center font-semibold">
         Ordura {import.meta.env.VITE_VERSION}

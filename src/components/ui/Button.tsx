@@ -32,10 +32,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       children,
       ...props
     },
-    ref
+    ref,
   ) => {
     const baseStyles =
-      "rounded-xl font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
+      "rounded-xl flex items-center justify-center font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
     const variantClass = variantStyles[variant];
     const sizeClass = sizeStyles[size];
 
@@ -49,7 +49,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {children}
       </button>
     );
-  }
+  },
 );
 
 Button.displayName = "Button";

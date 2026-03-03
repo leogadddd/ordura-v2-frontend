@@ -190,7 +190,7 @@ export function Cart({
         {/* Fees Link */}
         <button
           onClick={() => setIsFeesModalOpen(true)}
-          className="text-sm text-primary underline hover:text-primary-dark transition"
+          className="text-sm text-primary underline hover:text-primary-light transition"
         >
           Configure Fees
         </button>

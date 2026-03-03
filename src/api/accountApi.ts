@@ -11,28 +11,36 @@ export interface UserStats {
   lastLoginDate?: string;
 }
 
-export interface RoleDetails {
+export interface AccountRole {
   id: string;
   name: string;
-  permissions: any[]; // JSON field for permissions
 }
 
-export interface AccountInfo {
+export interface AccountProfile {
   id: string;
   email: string;
   username: string;
   firstName?: string;
   lastName?: string;
-  roleDetails?: RoleDetails;
+  role?: AccountRole | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
   lastLogin?: string;
 }
 
+export interface RecentSale {
+  id: string;
+  status: string;
+  createdAt: string;
+  grandTotal: number;
+  itemsQuantity: number;
+}
+
 export interface AccountData {
-  user: AccountInfo;
+  profile: AccountProfile;
   stats: UserStats;
+  recentSales: RecentSale[];
 }
 
 export type AccountResponse = ApiResponse<AccountData>;
@@ -48,10 +56,20 @@ export const updateAccountInfo = async (data: {
   firstName?: string;
   lastName?: string;
   email?: string;
-}): Promise<ApiResponse<AccountInfo>> => {
+}): Promise<
+  ApiResponse<{
+    id: string;
+    email: string;
+    username: string;
+    firstName?: string;
+    lastName?: string;
+    role: { id: string; name: string } | null;
+    permissions?: string[];
+  }>
+> => {
   const response = await apiClient.put(
     `${ACCOUNT_API_BASE}/update-profile`,
-    data
+    data,
   );
   return response.data;
 };

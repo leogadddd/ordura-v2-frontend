@@ -64,7 +64,7 @@ export function Modal({
           </div>
           <button
             onClick={attemptClose}
-            className="p-2 rounded-lg text-white hover:bg-primary-dark"
+            className="p-2 rounded-lg text-white hover:bg-primary-light"
           >
             <XMarkIcon className="w-6 h-6" />
           </button>

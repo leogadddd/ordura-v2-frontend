@@ -10,6 +10,16 @@ export default {
         "primary-pale": "#E8EDFB",
       },
       fontFamily: {
+        sans: [
+          "Cousine",
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica Neue",
+          "Arial",
+          "sans-serif",
+        ],
         brand: [
           "Batangas",
           "system-ui",

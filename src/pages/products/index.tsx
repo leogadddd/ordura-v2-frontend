@@ -15,6 +15,7 @@ import { showToast } from "@/lib/toast";
 import type { Product } from "@/api/productsApi";
 import { getProductColumnDefs } from "./column-def";
 import { useOptions } from "@/context/OptionsProvider";
+import { Page, PageHeader } from "@/components/layout/Page";
 
 export function ProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -113,64 +114,62 @@ export function ProductsPage() {
   const products = data?.data?.items || [];
 
   return (
-    <div className="h-full flex flex-col p-6">
-      <header className="flex items-center justify-between mb-4 gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-primary">Products</h1>
-          <p className="text-sm text-gray-600">
-            Manage your product catalog and inventory.
-          </p>
-        </div>
-        <div className="flex items-center gap-3 flex-1 max-w-2xl">
-          <div className="relative flex-1">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl"
-            />
-          </div>
-          <Button
-            onClick={handleRefresh}
-            variant="secondary"
-            size="md"
-            className="flex items-center gap-2 whitespace-nowrap h-10"
-            title="Refresh products"
-            disabled={isRefreshing}
-          >
-            <ArrowPathIcon
-              className="w-4 h-4"
-              style={{
-                animation: isRefreshing ? "spin 1s linear infinite" : "none",
-              }}
-            />
-            Refresh
-          </Button>
-          {selectedRows.length > 0 && (
+    <Page className="gap-4">
+      <PageHeader
+        title="Products"
+        subtitle="Manage your product catalog and inventory."
+        actions={
+          <>
+            <div className="relative w-full sm:w-80 md:w-96">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl"
+              />
+            </div>
             <Button
-              onClick={handleBulkDelete}
-              variant="destructive"
+              onClick={handleRefresh}
+              variant="secondary"
+              size="md"
+              className="flex items-center gap-2 whitespace-nowrap h-10"
+              title="Refresh products"
+              disabled={isRefreshing}
+            >
+              <ArrowPathIcon
+                className="w-4 h-4"
+                style={{
+                  animation: isRefreshing ? "spin 1s linear infinite" : "none",
+                }}
+              />
+              Refresh
+            </Button>
+            {selectedRows.length > 0 && (
+              <Button
+                onClick={handleBulkDelete}
+                variant="destructive"
+                size="md"
+                className="flex items-center gap-2 whitespace-nowrap"
+                disabled={deleteProductMutation.isPending}
+              >
+                <TrashIcon className="w-4 h-4" />
+                Delete Selected ({selectedRows.length})
+              </Button>
+            )}
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              variant="primary"
               size="md"
               className="flex items-center gap-2 whitespace-nowrap"
-              disabled={deleteProductMutation.isPending}
             >
-              <TrashIcon className="w-4 h-4" />
-              Delete Selected ({selectedRows.length})
+              <PlusIcon className="w-4 h-4" />
+              Add Product
             </Button>
-          )}
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            variant="primary"
-            size="md"
-            className="flex items-center gap-2 whitespace-nowrap"
-          >
-            <PlusIcon className="w-4 h-4" />
-            Add Product
-          </Button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <div
         className={`flex-1 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col transition-opacity ${
@@ -213,7 +212,7 @@ export function ProductsPage() {
         confirmVariant="danger"
         isLoading={deleteProductMutation.isPending}
       />
-    </div>
+    </Page>
   );
 }
 

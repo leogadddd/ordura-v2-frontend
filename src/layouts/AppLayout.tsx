@@ -9,7 +9,7 @@ export function AppLayout({ children }: PropsWithChildren) {
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
 
-        <main className="flex-1 overflow-hidden p-0 md:p-3 pb-0! h-full flex flex-col">
+        <main className="flex-1 overflow-hidden p-0 md:p-3 !pb-0 h-full flex flex-col">
           <div className=" md:rounded-t-2xl overflow-hidden h-full border border-b-0 border-primary-pale bg-white/90 shadow-sm flex-1 flex flex-col">
             {children}
           </div>
