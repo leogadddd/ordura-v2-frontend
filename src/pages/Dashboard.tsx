@@ -160,11 +160,11 @@ export function DashboardPage() {
         actions={
           <>
             <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium text-gray-900">
-                {displayName}
-              </p>
+              <p className="text-sm font-medium text-gray-900">{displayName}</p>
               <p className="text-xs text-gray-500 capitalize">
-                {accountData?.profile.role?.name || user?.roleDetails?.name || "User"}
+                {accountData?.profile.role?.name ||
+                  user?.roleDetails?.name ||
+                  "User"}
               </p>
             </div>
             <Button
@@ -198,15 +198,15 @@ export function DashboardPage() {
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statsCards.map((s) => (
-          <Card key={s.label} className="p-4">
+          <Card key={s.label} className="p-4 bg-primary! text-white">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-sm text-gray-500">{s.label}</p>
-                <p className="mt-2 text-xl font-semibold text-gray-900 truncate">
+                <p className="text-sm text-gray-400">{s.label}</p>
+                <p className="text-2xl font-semibold text-gray-100 truncate">
                   {s.value}
                 </p>
               </div>
-              <div className="text-gray-400 shrink-0">{s.icon}</div>
+              <div className="text-gray-100 shrink-0">{s.icon}</div>
             </div>
           </Card>
         ))}
