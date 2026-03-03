@@ -134,6 +134,13 @@ const navigationItems = () => {
       permission: makePermission("SETTINGS", "VIEW"),
       component: lazy(() => import("./pages/Settings")),
     },
+    {
+      label: "Account",
+      to: "/account",
+      icon: Users,
+      permission: makePermission("ACCOUNT", "VIEW"),
+      component: lazy(() => import("./pages/Account")),
+    },
   ];
 
   return { essentials, top, bottom } as NavigationItems;

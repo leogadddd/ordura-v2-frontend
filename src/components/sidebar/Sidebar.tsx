@@ -124,7 +124,7 @@ export function Sidebar() {
             ? groupedTopItems.map((group) => (
                 <div key={group.section ?? "__default"}>
                   {group.section && (
-                    <div className="px-3 pt-2 pb-1 text-xs text-gray-500 uppercase font-semibold tracking-wide">
+                    <div className="px-3 pt-2 pb-1 text-xs text-gray-400 uppercase font-semibold tracking-wide">
                       {group.section}
                     </div>
                   )}
