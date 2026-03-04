@@ -7,9 +7,9 @@ import {
   HomeIcon,
   MonitorIcon,
   PackageIcon,
-  ScrollIcon,
   SettingsIcon,
   Users,
+  MapPin,
 } from "lucide-react";
 
 interface NavItem {
@@ -74,6 +74,22 @@ const navigationItems = () => {
       permission: makePermission("PRODUCTS", "MANAGE"),
       section: "Navigation",
       component: lazy(() => import("./pages/products")),
+    },
+    {
+      label: "Stocks",
+      to: "/stocks",
+      icon: PackageIcon,
+      permission: makePermission("INVENTORY", "VIEW"),
+      section: "Inventory",
+      component: lazy(() => import("./pages/inventory/StocksPage")),
+    },
+    {
+      label: "Locations",
+      to: "/locations",
+      icon: MapPin,
+      permission: makePermission("INVENTORY", "VIEW"),
+      section: "Inventory",
+      component: lazy(() => import("./pages/inventory/LocationsPage")),
     },
     // {
     //   label: "Orders",

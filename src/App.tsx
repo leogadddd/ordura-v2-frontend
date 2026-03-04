@@ -29,7 +29,20 @@ const renderRoutes = (items: typeof routes.top, isNested = false) => {
             </Suspense>
           }
         >
-          <Route index element={<Navigate to="sales" replace />} />
+          {/* redirect to the first child automatically */}
+          <Route
+            index
+            element={
+              <Navigate
+                to={
+                  item.children && item.children[0]?.to
+                    ? item.children[0].to
+                    : ""
+                }
+                replace
+              />
+            }
+          />
           {renderRoutes(item.children, true)}
         </Route>
       );
@@ -185,6 +198,7 @@ function App() {
       ))}
       {renderRoutes(routes.top)}
       {renderRoutes(routes.bottom)}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route
         path="*"
         element={

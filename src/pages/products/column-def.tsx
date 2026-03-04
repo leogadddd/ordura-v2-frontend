@@ -168,6 +168,14 @@ export function getProductColumnDefs(
       cellClass: "text-right font-medium",
     },
     {
+      headerName: "Stock",
+      field: "stockQuantity" as keyof Product,
+      maxWidth: 120,
+      valueFormatter: (params: ValueFormatterParams<Product>) =>
+        typeof params.value === "number" ? params.value.toString() : "0",
+      cellClass: "text-right",
+    },
+    {
       headerName: "Fulfillment Type",
       field: "fulfillmentTypeId" as keyof Product,
       flex: 1,

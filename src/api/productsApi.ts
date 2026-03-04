@@ -14,6 +14,8 @@ export interface Product {
   isDraft: boolean;
   requiresFulfillment: boolean;
   fulfillmentTypeId?: string;
+  // current aggregated stock total (sum across locations)
+  stockQuantity?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -67,7 +69,7 @@ export type ProductResponse = ApiResponse<Product>;
 
 // Get all products with filters
 export const getProducts = async (
-  params?: ListProductsParams
+  params?: ListProductsParams,
 ): Promise<ListProductsResponse> => {
   const response = await apiClient.get("/products", { params });
   return response.data;
@@ -81,7 +83,7 @@ export const getProduct = async (id: string): Promise<ProductResponse> => {
 
 // Create product
 export const createProduct = async (
-  data: CreateProductData
+  data: CreateProductData,
 ): Promise<ProductResponse> => {
   const response = await apiClient.post("/products", data);
   return response.data;
@@ -90,7 +92,7 @@ export const createProduct = async (
 // Update product
 export const updateProduct = async (
   id: string,
-  data: UpdateProductData
+  data: UpdateProductData,
 ): Promise<ProductResponse> => {
   const response = await apiClient.put(`/products/${id}`, data);
   return response.data;

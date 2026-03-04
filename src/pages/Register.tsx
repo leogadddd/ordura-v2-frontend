@@ -35,7 +35,7 @@ export function RegisterPage({ isInitialSetup }: { isInitialSetup?: boolean }) {
   useEffect(() => {
     if (isInitialSetup && roles && roles.length > 0) {
       const adminRole = roles.find(
-        (role) => role.name.toLowerCase() === "administrator"
+        (role) => role.name.toLowerCase() === "administrator",
       );
       if (adminRole) {
         setFormData((prev) => ({ ...prev, roleId: adminRole.id }));
@@ -91,7 +91,7 @@ export function RegisterPage({ isInitialSetup }: { isInitialSetup?: boolean }) {
       navigate("/", { replace: true });
     } catch (err: any) {
       setError(
-        err.response?.data?.error || "Registration failed. Please try again."
+        err.response?.data?.error || "Registration failed. Please try again.",
       );
     } finally {
       setIsLoading(false);

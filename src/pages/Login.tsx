@@ -38,7 +38,7 @@ export function LoginPage() {
       resetRedirectFlag();
 
       // Redirect to dashboard on success
-      navigate("/dashboard", { replace: true });
+      navigate("/", { replace: true });
     } catch (err: any) {
       setError(
         err.response?.data?.error ||
