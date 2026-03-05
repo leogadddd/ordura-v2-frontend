@@ -27,6 +27,7 @@ export function ProductFormModal({
   const [formData, setFormData] = useState({
     name: "",
     category: "",
+    reorderPoint: "",
     description: "",
     cost: "",
     sellingPrice: "",
@@ -66,6 +67,11 @@ export function ProductFormModal({
       setFormData({
         name: product?.name || "",
         category: product?.category || "",
+        reorderPoint:
+          (product as any)?.reorderPoint !== undefined &&
+          (product as any)?.reorderPoint !== null
+            ? String((product as any)?.reorderPoint)
+            : "",
         description: product?.description || "",
         cost: product?.cost?.toString() || "",
         sellingPrice: product?.sellingPrice?.toString() || "",
@@ -125,11 +131,19 @@ export function ProductFormModal({
     if (!validateForm()) return;
 
     try {
+      const reorderPointValue =
+        formData.reorderPoint?.trim() === ""
+          ? undefined
+          : parseInt(formData.reorderPoint, 10);
+
       const productData = {
         name: formData.name,
         category: formData.category,
         description: formData.description || undefined,
         notes: formData.notes || undefined,
+        reorderPoint: Number.isFinite(reorderPointValue)
+          ? reorderPointValue
+          : undefined,
         cost: parseFloat(formData.cost),
         sellingPrice: parseFloat(formData.sellingPrice),
         status: status,
@@ -176,11 +190,19 @@ export function ProductFormModal({
     }
 
     try {
+      const reorderPointValue =
+        formData.reorderPoint?.trim() === ""
+          ? undefined
+          : parseInt(formData.reorderPoint, 10);
+
       const productData = {
         name: formData.name,
         category: formData.category,
         description: formData.description || undefined,
         notes: formData.notes || undefined,
+        reorderPoint: Number.isFinite(reorderPointValue)
+          ? reorderPointValue
+          : undefined,
         cost: parseFloat(formData.cost) || 0,
         sellingPrice: parseFloat(formData.sellingPrice) || 0,
         status: status,
@@ -276,6 +298,21 @@ export function ProductFormModal({
                     onChange={(e) => handleChange("category", e.target.value)}
                     error={errors.category}
                     required
+                  />
+                </Tooltip>
+                <Tooltip
+                  content="Optional threshold used for low-stock alerts"
+                  position="bottom"
+                >
+                  <Input
+                    label="Reorder Point"
+                    type="number"
+                    placeholder="e.g., 10"
+                    value={formData.reorderPoint}
+                    onChange={(e) =>
+                      handleChange("reorderPoint", e.target.value)
+                    }
+                    error={(errors as any).reorderPoint}
                   />
                 </Tooltip>
                 <div className="col-span-2">

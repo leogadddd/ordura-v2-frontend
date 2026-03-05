@@ -7,14 +7,21 @@ import {
   createLocation,
   updateLocation,
   deleteLocation,
+  fetchInventorySummary,
 } from "@/api/inventoryApi";
 
 export const inventoryKeys = {
   all: ["inventory"] as const,
   stocks: () => [...inventoryKeys.all, "stocks"] as const,
+  stocksList: (params?: {
+    productId?: string;
+    locationId?: string;
+    search?: string;
+  }) => [...inventoryKeys.stocks(), params ?? {}] as const,
   stock: (id: string) => [...inventoryKeys.stocks(), id] as const,
   locations: () => [...inventoryKeys.all, "locations"] as const,
   location: (id: string) => [...inventoryKeys.locations(), id] as const,
+  summary: () => [...inventoryKeys.all, "summary"] as const,
 };
 
 export function useStocks(params?: {
@@ -23,8 +30,15 @@ export function useStocks(params?: {
   search?: string;
 }) {
   return useQuery({
-    queryKey: inventoryKeys.stocks(),
+    queryKey: inventoryKeys.stocksList(params),
     queryFn: () => fetchStocks(params),
+  });
+}
+
+export function useInventorySummary() {
+  return useQuery({
+    queryKey: inventoryKeys.summary(),
+    queryFn: () => fetchInventorySummary(),
   });
 }
 

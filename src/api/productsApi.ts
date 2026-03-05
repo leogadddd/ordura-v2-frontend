@@ -8,6 +8,7 @@ export interface Product {
   category: string;
   description?: string;
   notes?: string;
+  reorderPoint?: number | null;
   cost: number;
   sellingPrice: number;
   status: "ACTIVE" | "INACTIVE" | "OUT_OF_STOCK";
@@ -25,6 +26,7 @@ export interface CreateProductData {
   category: string;
   description?: string;
   notes?: string;
+  reorderPoint?: number;
   cost: number;
   sellingPrice: number;
   isDraft?: boolean;
@@ -37,6 +39,7 @@ export interface UpdateProductData {
   category?: string;
   description?: string;
   notes?: string;
+  reorderPoint?: number | null;
   cost?: number;
   sellingPrice?: number;
   status?: "ACTIVE" | "INACTIVE" | "OUT_OF_STOCK";
