@@ -197,12 +197,22 @@ export function DashboardPage() {
       ) : null}
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statsCards.map((s) => (
-          <Card key={s.label} className="p-4 bg-primary! text-white">
+        {/* get the index */}
+        {statsCards.map((s, i) => (
+          <Card
+            key={s.label}
+            className={`p-4 text-white ${i === 0 ? "bg-primary!" : "bg-gray-700"}`}
+          >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-sm text-gray-400">{s.label}</p>
-                <p className="text-2xl font-semibold text-gray-100 truncate">
+                <p
+                  className={`text-sm ${i === 0 ? "text-white" : "text-gray-400"}`}
+                >
+                  {s.label}
+                </p>
+                <p
+                  className={`text-2xl font-semibold truncate ${i === 0 ? "text-white" : "text-black"}`}
+                >
                   {s.value}
                 </p>
               </div>

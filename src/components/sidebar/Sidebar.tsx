@@ -118,7 +118,7 @@ export function Sidebar() {
           </button>
         </div>
 
-        <nav className="space-y-1 flex-1">
+        <nav className="space-y-1 flex-1 overflow-y-auto">
           {/* When expanded, show section headers and grouped items. When collapsed, show a flat list so headers don't take space. */}
           {isExpanded
             ? groupedTopItems.map((group) => (
@@ -319,7 +319,7 @@ export function Sidebar() {
               })}
         </nav>
 
-        <nav className="space-y-1 mt-auto">
+        <nav className="space-y-1 mt-auto border-t border-t-gray-200">
           {filteredBottomItems.map((item) => {
             const Icon = item.icon;
             return (

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { Select } from "@/components/ui/Select";
+// import { Select } from "@/components/ui/Select";
 import { useProducts } from "@/hooks/useProducts";
 import { useLocations } from "@/hooks/useInventory";
 import type { Location } from "@/api/inventoryApi";
@@ -292,13 +292,13 @@ export function POSPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl"
             />
-            <Select
+            {/* <Select
               value={locationId}
               onChange={(e) => setLocationId(String(e.target.value))}
               options={locations.map((l) => ({ label: l.name, value: l.id }))}
               placeholder="Location"
               className="w-40 ml-2"
-            />
+            /> */}
             <Button
               onClick={() => setIsCartModalOpen(true)}
               variant="secondary"

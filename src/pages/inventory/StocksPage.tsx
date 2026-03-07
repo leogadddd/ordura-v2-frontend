@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/Button";
 import { Page, PageHeader } from "@/components/layout/Page";
 import { AdjustStockModal } from "@/components/modals/AdjustStockModal";
 import { useStocks } from "@/hooks/useInventory";
-import { showToast } from "@/lib/toast";
 import type { Stock } from "@/api/inventoryApi";
 
 export function StocksPage() {
@@ -102,9 +101,6 @@ export function StocksPage() {
       />
 
       <div className="flex-1 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col">
-        <div className="p-4 flex justify-between items-center">
-          <h2 className="text-lg font-semibold">Stocks</h2>
-        </div>
         <div className="flex-1">
           <DataGrid<Stock>
             rowData={stocksData}
