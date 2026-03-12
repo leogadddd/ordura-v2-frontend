@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchStocks,
   fetchStock,
+  createStock,
+  deleteStock,
   adjustStock,
   fetchLocations,
   createLocation,
@@ -57,6 +59,30 @@ export function useAdjustStock() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: inventoryKeys.stocks() });
       // also refresh product list to update stock totals
+      qc.invalidateQueries({ queryKey: ["products", "list"] });
+    },
+  });
+}
+
+export function useCreateStock() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: createStock,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: inventoryKeys.stocks() });
+      qc.invalidateQueries({ queryKey: inventoryKeys.summary() });
+      qc.invalidateQueries({ queryKey: ["products", "list"] });
+    },
+  });
+}
+
+export function useDeleteStock() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: deleteStock,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: inventoryKeys.stocks() });
+      qc.invalidateQueries({ queryKey: inventoryKeys.summary() });
       qc.invalidateQueries({ queryKey: ["products", "list"] });
     },
   });

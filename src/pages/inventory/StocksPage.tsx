@@ -1,15 +1,21 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   MagnifyingGlassIcon,
   ArrowPathIcon,
   PencilIcon,
+  PlusIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import type { ColDef } from "ag-grid-community";
 import { DataGrid } from "@/components/ui/DataGrid";
 import { Button } from "@/components/ui/Button";
 import { Page, PageHeader } from "@/components/layout/Page";
 import { AdjustStockModal } from "@/components/modals/AdjustStockModal";
-import { useStocks } from "@/hooks/useInventory";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { StockFormModal } from "@/components/modals/StockFormModal";
+import { useProducts } from "@/hooks/useProducts";
+import { useDeleteStock, useLocations, useStocks } from "@/hooks/useInventory";
+import { showToast } from "@/lib/toast";
 import type { Stock } from "@/api/inventoryApi";
 
 export function StocksPage() {
@@ -19,47 +25,89 @@ export function StocksPage() {
   const [stocksData, setStocksData] = useState<Stock[]>([]);
 
   const [showAdjustModal, setShowAdjustModal] = useState(false);
-  const [adjustProduct, setAdjustProduct] = useState<any>(undefined);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [adjustProduct, setAdjustProduct] = useState<
+    Stock["product"] | undefined
+  >(undefined);
+  const [stockToDelete, setStockToDelete] = useState<Stock | undefined>(
+    undefined,
+  );
   const [selectedLocationId, setSelectedLocationId] = useState<
     string | undefined
   >(undefined);
 
   const stocksQuery = useStocks({ search: searchQuery || undefined });
+  const locationsQuery = useLocations();
+  const productsQuery = useProducts({ includeDrafts: true, limit: 500 });
+  const deleteStockMutation = useDeleteStock();
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      await stocksQuery.refetch();
+      await Promise.all([
+        stocksQuery.refetch(),
+        locationsQuery.refetch(),
+        productsQuery.refetch(),
+      ]);
     } finally {
       setIsRefreshing(false);
     }
-  }, [stocksQuery]);
+  }, [locationsQuery, productsQuery, stocksQuery]);
 
   useEffect(() => {
     if (stocksQuery.data) setStocksData(stocksQuery.data);
   }, [stocksQuery.data]);
 
+  const locations = locationsQuery.data ?? [];
+  const products = useMemo(
+    () => productsQuery.data?.data?.items ?? [],
+    [productsQuery.data],
+  );
+
+  const handleDeleteStock = useCallback(async () => {
+    if (!stockToDelete) return;
+
+    try {
+      await deleteStockMutation.mutateAsync(stockToDelete.id);
+      showToast.success("Stock entry deleted");
+      setStockToDelete(undefined);
+    } catch (error) {
+      console.error("Failed to delete stock entry", error);
+      showToast.error("Failed to delete stock entry");
+    }
+  }, [deleteStockMutation, stockToDelete]);
+
   const stockColumns: ColDef<Stock>[] = [
     { headerName: "Product", field: "product.name" as any, flex: 1 },
+    { headerName: "SKU", field: "product.sku" as any, width: 130 },
     { headerName: "Location", field: "location.name" as any, flex: 1 },
     { headerName: "Quantity", field: "quantity" as keyof Stock, flex: 0.5 },
     {
       headerName: "Actions",
       field: "actions" as any,
       cellRenderer: (params: any) => (
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => {
-            setAdjustProduct(params.data.product);
-            setSelectedLocationId(params.data.location.id);
-            setShowAdjustModal(true);
-          }}
-        >
-          <PencilIcon className="w-4 h-4" />
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              setAdjustProduct(params.data.product);
+              setSelectedLocationId(params.data.location.id);
+              setShowAdjustModal(true);
+            }}
+          >
+            <PencilIcon className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setStockToDelete(params.data)}
+          >
+            <TrashIcon className="w-4 h-4" />
+          </Button>
+        </div>
       ),
-      width: 100,
+      width: 140,
     },
   ];
 
@@ -96,6 +144,15 @@ export function StocksPage() {
               />
               Refresh
             </Button>
+            <Button
+              onClick={() => setShowCreateModal(true)}
+              variant="primary"
+              size="md"
+              className="flex items-center gap-2 whitespace-nowrap"
+            >
+              <PlusIcon className="w-4 h-4" />
+              Add stock
+            </Button>
           </>
         }
       />
@@ -116,11 +173,39 @@ export function StocksPage() {
       <AdjustStockModal
         isOpen={showAdjustModal}
         product={adjustProduct}
+        locations={locations}
         defaultLocationId={selectedLocationId}
         onClose={() => {
           setShowAdjustModal(false);
+          setAdjustProduct(undefined);
           refresh(); // refresh whether or not adjustment occurred
         }}
+      />
+
+      <StockFormModal
+        isOpen={showCreateModal}
+        onClose={() => {
+          setShowCreateModal(false);
+          refresh();
+        }}
+        products={products}
+        locations={locations}
+      />
+
+      <ConfirmDialog
+        isOpen={!!stockToDelete}
+        onClose={() => setStockToDelete(undefined)}
+        onConfirm={handleDeleteStock}
+        title="Delete stock entry"
+        description={
+          stockToDelete
+            ? `Delete ${stockToDelete.product.name} at ${stockToDelete.location.name}? This will also remove its adjustment history.`
+            : "Are you sure you want to delete this stock entry?"
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmVariant="danger"
+        isLoading={deleteStockMutation.isPending}
       />
     </Page>
   );

@@ -1,10 +1,11 @@
 import apiClient from "@/lib/apiClient";
 import type { ApiResponse } from "@/lib/response";
+import type { Product } from "@/api/productsApi";
 
 export interface Stock {
   id: string;
-  product: any;
-  location: any;
+  product: Product;
+  location: Location;
   quantity: number;
   adjustments?: any[];
 }
@@ -41,6 +42,21 @@ export const fetchStocks = async (params?: {
 export const fetchStock = async (id: string) => {
   const res = await apiClient.get(`/inventory/stocks/${id}`);
   return res.data.data as Stock;
+};
+
+export const createStock = async (data: {
+  productId: string;
+  locationId: string;
+  quantity?: number;
+  reason?: string;
+}) => {
+  const res = await apiClient.post(`/inventory/stocks`, data);
+  return res.data.data as Stock;
+};
+
+export const deleteStock = async (id: string) => {
+  const res = await apiClient.delete(`/inventory/stocks/${id}`);
+  return res.data;
 };
 
 export const fetchInventorySummary = async (): Promise<InventorySummary> => {

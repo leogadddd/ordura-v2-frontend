@@ -76,6 +76,14 @@ const navigationItems = () => {
       component: lazy(() => import("./pages/products")),
     },
     {
+      label: "Suppliers",
+      to: "/suppliers",
+      icon: Users,
+      permission: makePermission("PRODUCTS", "MANAGE"),
+      section: "Inventory",
+      component: lazy(() => import("./pages/suppliers")),
+    },
+    {
       label: "Inventory",
       to: "/inventory",
       icon: PackageIcon,
