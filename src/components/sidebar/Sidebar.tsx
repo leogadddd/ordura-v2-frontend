@@ -93,7 +93,7 @@ export function Sidebar() {
     <div className="hidden md:block">
       <aside
         className={`h-[calc(100vh-1.75rem)] sticky top-0 border-r border-primary-pale bg-white/90 shadow-sm flex flex-col py-2 ${
-          isExpanded ? "w-48 px-1.5" : "w-14 items-center px-1.5"
+          isExpanded ? "w-50 px-1.5" : "w-16 items-center px-1.5"
         }`}
       >
         <div className="mb-1">
