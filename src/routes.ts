@@ -10,6 +10,8 @@ import {
   SettingsIcon,
   Users,
   MapPin,
+  TruckIcon,
+  ShelvingUnitIcon,
 } from "lucide-react";
 
 interface NavItem {
@@ -76,14 +78,6 @@ const navigationItems = () => {
       component: lazy(() => import("./pages/products")),
     },
     {
-      label: "Suppliers",
-      to: "/suppliers",
-      icon: Users,
-      permission: makePermission("PRODUCTS", "MANAGE"),
-      section: "Inventory",
-      component: lazy(() => import("./pages/suppliers")),
-    },
-    {
       label: "Inventory",
       to: "/inventory",
       icon: PackageIcon,
@@ -94,10 +88,26 @@ const navigationItems = () => {
     {
       label: "Stocks",
       to: "/stocks",
-      icon: PackageIcon,
+      icon: ShelvingUnitIcon,
       permission: makePermission("INVENTORY", "VIEW"),
       section: "Inventory",
       component: lazy(() => import("./pages/inventory/StocksPage")),
+    },
+    {
+      label: "Suppliers",
+      to: "/suppliers",
+      icon: Users,
+      permission: makePermission("PRODUCTS", "MANAGE"),
+      section: "Inventory",
+      component: lazy(() => import("./pages/suppliers")),
+    },
+    {
+      label: "Purchase Orders",
+      to: "/purchase-orders",
+      icon: TruckIcon,
+      permission: makePermission("INVENTORY", "VIEW"),
+      section: "Inventory",
+      component: lazy(() => import("./pages/purchaseOrders")),
     },
     {
       label: "Locations",

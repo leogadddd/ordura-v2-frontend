@@ -2,86 +2,110 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   MagnifyingGlassIcon,
   ArrowPathIcon,
-  PencilIcon,
   PlusIcon,
-  TrashIcon,
 } from "@heroicons/react/24/outline";
 import type { ColDef } from "ag-grid-community";
 import { DataGrid } from "@/components/ui/DataGrid";
 import { Button } from "@/components/ui/Button";
 import { Page, PageHeader } from "@/components/layout/Page";
-import { AdjustStockModal } from "@/components/modals/AdjustStockModal";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { StockFormModal } from "@/components/modals/StockFormModal";
-import { useProducts } from "@/hooks/useProducts";
-import { useDeleteStock, useLocations, useStocks } from "@/hooks/useInventory";
-import { showToast } from "@/lib/toast";
-import type { Stock } from "@/api/inventoryApi";
+import { AdjustInventoryItemModal } from "@/components/modals/AdjustInventoryItemModal";
+import { InventoryItemFormModal } from "@/components/modals/InventoryItemFormModal";
+import { useLocations, useInventoryItems } from "@/hooks/useInventory";
+import { useSuppliers } from "@/hooks/useSuppliers";
+import type { InventoryItem } from "@/api/inventoryApi";
+
+function formatUnit(unit: InventoryItem["measurementUnit"]) {
+  switch (unit) {
+    case "ML":
+      return "ml";
+    case "L":
+      return "L";
+    case "OZ":
+      return "oz";
+    case "G":
+      return "g";
+    case "KG":
+      return "kg";
+    default:
+      return "piece";
+  }
+}
 
 export function StocksPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [stocksData, setStocksData] = useState<Stock[]>([]);
+  const [itemsData, setItemsData] = useState<InventoryItem[]>([]);
 
   const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [adjustProduct, setAdjustProduct] = useState<
-    Stock["product"] | undefined
-  >(undefined);
-  const [stockToDelete, setStockToDelete] = useState<Stock | undefined>(
-    undefined,
-  );
-  const [selectedLocationId, setSelectedLocationId] = useState<
-    string | undefined
-  >(undefined);
+  const [adjustItem, setAdjustItem] = useState<InventoryItem | undefined>();
 
-  const stocksQuery = useStocks({ search: searchQuery || undefined });
+  const itemsQuery = useInventoryItems({ search: searchQuery || undefined });
   const locationsQuery = useLocations();
-  const productsQuery = useProducts({ includeDrafts: true, limit: 500 });
-  const deleteStockMutation = useDeleteStock();
+  const suppliersQuery = useSuppliers({});
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
       await Promise.all([
-        stocksQuery.refetch(),
+        itemsQuery.refetch(),
         locationsQuery.refetch(),
-        productsQuery.refetch(),
+        suppliersQuery.refetch(),
       ]);
     } finally {
       setIsRefreshing(false);
     }
-  }, [locationsQuery, productsQuery, stocksQuery]);
+  }, [itemsQuery, locationsQuery, suppliersQuery]);
 
   useEffect(() => {
-    if (stocksQuery.data) setStocksData(stocksQuery.data);
-  }, [stocksQuery.data]);
+    if (itemsQuery.data) setItemsData(itemsQuery.data);
+  }, [itemsQuery.data]);
 
   const locations = locationsQuery.data ?? [];
-  const products = useMemo(
-    () => productsQuery.data?.data?.items ?? [],
-    [productsQuery.data],
+  const suppliers = useMemo(
+    () => suppliersQuery.data ?? [],
+    [suppliersQuery.data],
   );
 
-  const handleDeleteStock = useCallback(async () => {
-    if (!stockToDelete) return;
-
-    try {
-      await deleteStockMutation.mutateAsync(stockToDelete.id);
-      showToast.success("Stock entry deleted");
-      setStockToDelete(undefined);
-    } catch (error) {
-      console.error("Failed to delete stock entry", error);
-      showToast.error("Failed to delete stock entry");
-    }
-  }, [deleteStockMutation, stockToDelete]);
-
-  const stockColumns: ColDef<Stock>[] = [
-    { headerName: "Product", field: "product.name" as any, flex: 1 },
-    { headerName: "SKU", field: "product.sku" as any, width: 130 },
-    { headerName: "Location", field: "location.name" as any, flex: 1 },
-    { headerName: "Quantity", field: "quantity" as keyof Stock, flex: 0.5 },
+  const itemColumns: ColDef<InventoryItem>[] = [
+    { headerName: "Name", field: "name" as keyof InventoryItem, flex: 1.2 },
+    {
+      headerName: "Unit",
+      field: "measurementUnit" as keyof InventoryItem,
+      width: 120,
+      valueFormatter: (p: any) => formatUnit(p.value),
+    },
+    {
+      headerName: "Supplier",
+      field: "supplier.name" as any,
+      flex: 1,
+      valueGetter: (p: any) => p.data?.supplier?.name ?? "—",
+    },
+    {
+      headerName: "Total",
+      field: "totalQuantity" as any,
+      width: 120,
+      valueGetter: (p: any) => p.data?.totalQuantity ?? 0,
+    },
+    {
+      headerName: "Low Threshold",
+      field: "lowThreshold" as any,
+      width: 140,
+      valueGetter: (p: any) =>
+        typeof p.data?.lowThreshold === "number" ? p.data.lowThreshold : "—",
+    },
+    {
+      headerName: "Alerts",
+      field: "alerts" as any,
+      width: 140,
+      valueGetter: (p: any) => {
+        if (!p.data?.shouldAlert) return "Off";
+        if (p.data?.isOutOfStock) return "Out of stock";
+        if (p.data?.isLowStock) return "Low";
+        return "OK";
+      },
+    },
     {
       headerName: "Actions",
       field: "actions" as any,
@@ -91,19 +115,11 @@ export function StocksPage() {
             variant="secondary"
             size="sm"
             onClick={() => {
-              setAdjustProduct(params.data.product);
-              setSelectedLocationId(params.data.location.id);
+              setAdjustItem(params.data);
               setShowAdjustModal(true);
             }}
           >
-            <PencilIcon className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setStockToDelete(params.data)}
-          >
-            <TrashIcon className="w-4 h-4" />
+            Adjust
           </Button>
         </div>
       ),
@@ -114,15 +130,15 @@ export function StocksPage() {
   return (
     <Page className="gap-4">
       <PageHeader
-        title="Stocks"
-        subtitle="View and adjust stock levels."
+        title="Stock Items"
+        subtitle="Create and adjust inventory items that aren't POS products."
         actions={
           <>
             <div className="relative w-full sm:w-80 md:w-96">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
               <input
                 type="text"
-                placeholder="Search products..."
+                placeholder="Search stock items..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl"
@@ -151,7 +167,7 @@ export function StocksPage() {
               className="flex items-center gap-2 whitespace-nowrap"
             >
               <PlusIcon className="w-4 h-4" />
-              Add stock
+              Add stock item
             </Button>
           </>
         }
@@ -159,53 +175,36 @@ export function StocksPage() {
 
       <div className="flex-1 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col">
         <div className="flex-1">
-          <DataGrid<Stock>
-            rowData={stocksData}
-            columnDefs={stockColumns}
-            loading={stocksQuery.isLoading || isRefreshing}
-            noRowsMessage="No stocks available."
+          <DataGrid<InventoryItem>
+            rowData={itemsData}
+            columnDefs={itemColumns}
+            loading={itemsQuery.isLoading || isRefreshing}
+            noRowsMessage="No stock items available."
             height="100%"
             rowSelection={{ mode: "singleRow" }}
           />
         </div>
       </div>
 
-      <AdjustStockModal
+      <AdjustInventoryItemModal
         isOpen={showAdjustModal}
-        product={adjustProduct}
+        item={adjustItem}
         locations={locations}
-        defaultLocationId={selectedLocationId}
         onClose={() => {
           setShowAdjustModal(false);
-          setAdjustProduct(undefined);
+          setAdjustItem(undefined);
           refresh(); // refresh whether or not adjustment occurred
         }}
       />
 
-      <StockFormModal
+      <InventoryItemFormModal
         isOpen={showCreateModal}
         onClose={() => {
           setShowCreateModal(false);
           refresh();
         }}
-        products={products}
         locations={locations}
-      />
-
-      <ConfirmDialog
-        isOpen={!!stockToDelete}
-        onClose={() => setStockToDelete(undefined)}
-        onConfirm={handleDeleteStock}
-        title="Delete stock entry"
-        description={
-          stockToDelete
-            ? `Delete ${stockToDelete.product.name} at ${stockToDelete.location.name}? This will also remove its adjustment history.`
-            : "Are you sure you want to delete this stock entry?"
-        }
-        confirmText="Delete"
-        cancelText="Cancel"
-        confirmVariant="danger"
-        isLoading={deleteStockMutation.isPending}
+        suppliers={suppliers}
       />
     </Page>
   );

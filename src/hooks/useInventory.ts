@@ -5,6 +5,13 @@ import {
   createStock,
   deleteStock,
   adjustStock,
+  fetchInventoryItems,
+  fetchInventoryItem,
+  createInventoryItem,
+  updateInventoryItem,
+  deleteInventoryItem,
+  adjustInventoryLevel,
+  fetchInventoryLevels,
   fetchLocations,
   createLocation,
   updateLocation,
@@ -14,6 +21,11 @@ import {
 
 export const inventoryKeys = {
   all: ["inventory"] as const,
+  items: () => [...inventoryKeys.all, "items"] as const,
+  itemsList: (params?: { search?: string }) =>
+    [...inventoryKeys.items(), params ?? {}] as const,
+  item: (id: string) => [...inventoryKeys.items(), id] as const,
+  itemLevels: (id: string) => [...inventoryKeys.items(), id, "levels"] as const,
   stocks: () => [...inventoryKeys.all, "stocks"] as const,
   stocksList: (params?: {
     productId?: string;
@@ -34,6 +46,75 @@ export function useStocks(params?: {
   return useQuery({
     queryKey: inventoryKeys.stocksList(params),
     queryFn: () => fetchStocks(params),
+  });
+}
+
+export function useInventoryItems(params?: { search?: string }) {
+  return useQuery({
+    queryKey: inventoryKeys.itemsList(params),
+    queryFn: () => fetchInventoryItems(params),
+  });
+}
+
+export function useInventoryItem(id: string) {
+  return useQuery({
+    queryKey: inventoryKeys.item(id),
+    queryFn: () => fetchInventoryItem(id),
+    enabled: !!id,
+  });
+}
+
+export function useInventoryLevels(inventoryItemId: string) {
+  return useQuery({
+    queryKey: inventoryKeys.itemLevels(inventoryItemId),
+    queryFn: () => fetchInventoryLevels(inventoryItemId),
+    enabled: !!inventoryItemId,
+  });
+}
+
+export function useCreateInventoryItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: createInventoryItem,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: inventoryKeys.items() });
+      qc.invalidateQueries({ queryKey: inventoryKeys.summary() });
+    },
+  });
+}
+
+export function useUpdateInventoryItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      updateInventoryItem(id, data),
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: inventoryKeys.items() });
+      qc.invalidateQueries({ queryKey: inventoryKeys.item(vars.id) });
+      qc.invalidateQueries({ queryKey: inventoryKeys.summary() });
+    },
+  });
+}
+
+export function useDeleteInventoryItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteInventoryItem(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: inventoryKeys.items() });
+      qc.invalidateQueries({ queryKey: inventoryKeys.summary() });
+    },
+  });
+}
+
+export function useAdjustInventoryLevel() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: adjustInventoryLevel,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: inventoryKeys.items() });
+      qc.invalidateQueries({ queryKey: inventoryKeys.summary() });
+    },
   });
 }
 

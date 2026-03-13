@@ -55,28 +55,50 @@ export function LocationFormModal({
     }
   };
 
+  const isSaving = createMutation.isPending || updateMutation.isPending;
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={location ? "Edit Location" : "New Location"}
     >
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium">Name</label>
-          <Input value={name} onChange={(e) => setName(e.target.value)} />
-          {errors.name && <p className="text-red-500 text-xs">{errors.name}</p>}
+      <div className="flex flex-col h-full">
+        <div className="flex-1 overflow-auto space-y-6 pr-4 pt-4 pb-10">
+          <section className="flex gap-6">
+            <div className="w-[30%]">
+              <h3 className="text-lg font-semibold text-primary">
+                Location Details
+              </h3>
+              <p className="mt-1 text-sm text-gray-600">
+                Set the name and address for this location.
+              </p>
+            </div>
+
+            <div className="w-[70%]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  error={errors.name}
+                />
+                <Input
+                  label="Address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
+              </div>
+            </div>
+          </section>
         </div>
-        <div>
-          <label className="block text-sm font-medium">Address</label>
-          <Input value={address} onChange={(e) => setAddress(e.target.value)} />
-        </div>
-        <div className="flex justify-end">
-          <Button
-            onClick={handleSave}
-            disabled={createMutation.isPending || updateMutation.isPending}
-          >
-            Save
+
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 bg-white sticky pb-1 bottom-0">
+          <Button variant="outline" onClick={onClose} disabled={isSaving}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>

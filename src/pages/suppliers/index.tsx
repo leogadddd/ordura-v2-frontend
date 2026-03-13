@@ -7,19 +7,22 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import type { ColDef } from "ag-grid-community";
-import { DataGrid } from "@/components/ui/DataGrid";
-import { Button } from "@/components/ui/Button";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+
+import type { Supplier } from "@/api/suppliersApi";
+import { SupplierContactsModal } from "@/components/modals/SupplierContactsModal";
 import { SupplierFormModal } from "@/components/modals/SupplierFormModal";
 import { Page, PageHeader } from "@/components/layout/Page";
+import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { DataGrid } from "@/components/ui/DataGrid";
 import { useDeleteSupplier, useSuppliers } from "@/hooks/useSuppliers";
 import { showToast } from "@/lib/toast";
-import type { Supplier } from "@/api/suppliersApi";
 
 export function SuppliersPage() {
+  const [suppliersData, setSuppliersData] = useState<Supplier[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [suppliersData, setSuppliersData] = useState<Supplier[]>([]);
+
   const [showSupplierModal, setShowSupplierModal] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | undefined>(
     undefined,
@@ -28,13 +31,16 @@ export function SuppliersPage() {
     Supplier | undefined
   >(undefined);
 
-  const suppliersQuery = useSuppliers({ search: searchQuery || undefined });
+  const [showContactsModal, setShowContactsModal] = useState(false);
+  const [contactsSupplier, setContactsSupplier] = useState<
+    Supplier | undefined
+  >(undefined);
+
+  const suppliersQuery = useSuppliers({ search: searchQuery });
   const deleteSupplierMutation = useDeleteSupplier();
 
   useEffect(() => {
-    if (suppliersQuery.data) {
-      setSuppliersData(suppliersQuery.data);
-    }
+    setSuppliersData(suppliersQuery.data ?? []);
   }, [suppliersQuery.data]);
 
   const refresh = useCallback(async () => {
@@ -58,22 +64,42 @@ export function SuppliersPage() {
       await deleteSupplierMutation.mutateAsync(supplierToDelete.id);
       showToast.success("Supplier deleted");
       setSupplierToDelete(undefined);
+      await refresh();
     } catch (error) {
       console.error("Failed to delete supplier", error);
       showToast.error("Failed to delete supplier");
     }
-  }, [deleteSupplierMutation, supplierToDelete]);
+  }, [deleteSupplierMutation, refresh, supplierToDelete]);
 
   const columnDefs = useMemo<ColDef<Supplier>[]>(
     () => [
       { headerName: "Supplier", field: "name" as keyof Supplier, flex: 1.2 },
-      {
-        headerName: "Contact Person",
-        field: "contactPerson" as keyof Supplier,
-        flex: 1,
-      },
       { headerName: "Email", field: "email" as keyof Supplier, flex: 1.1 },
       { headerName: "Phone", field: "phone" as keyof Supplier, width: 160 },
+      {
+        headerName: "Delivery (days)",
+        field: "deliveryLeadTimeDays" as any,
+        width: 150,
+        valueGetter: (p: any) =>
+          typeof p.data?.deliveryLeadTimeDays === "number"
+            ? p.data.deliveryLeadTimeDays
+            : "—",
+      },
+      {
+        headerName: "Tags",
+        field: "tags" as any,
+        flex: 1,
+        valueGetter: (p: any) =>
+          p.data?.tags?.length
+            ? p.data.tags.map((t: any) => t.label).join(", ")
+            : "—",
+      },
+      {
+        headerName: "Contacts",
+        field: "_count.contacts" as any,
+        width: 120,
+        valueGetter: (p: any) => p.data?._count?.contacts ?? 0,
+      },
       {
         headerName: "Status",
         field: "isActive" as keyof Supplier,
@@ -83,25 +109,40 @@ export function SuppliersPage() {
       {
         headerName: "Actions",
         field: "actions" as any,
-        width: 140,
         cellRenderer: (params: any) => (
           <div className="flex gap-2">
             <Button
               variant="secondary"
               size="sm"
               onClick={() => handleEdit(params.data)}
+              title="Edit supplier"
             >
               <PencilIcon className="w-4 h-4" />
             </Button>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setContactsSupplier(params.data);
+                setShowContactsModal(true);
+              }}
+              title="Manage contacts"
+            >
+              Contacts
+            </Button>
+
             <Button
               variant="destructive"
               size="sm"
               onClick={() => setSupplierToDelete(params.data)}
+              title="Delete supplier"
             >
               <TrashIcon className="w-4 h-4" />
             </Button>
           </div>
         ),
+        width: 220,
       },
     ],
     [handleEdit],
@@ -124,6 +165,7 @@ export function SuppliersPage() {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl"
               />
             </div>
+
             <Button
               onClick={refresh}
               variant="secondary"
@@ -140,6 +182,7 @@ export function SuppliersPage() {
               />
               Refresh
             </Button>
+
             <Button
               onClick={() => {
                 setEditingSupplier(undefined);
@@ -175,6 +218,16 @@ export function SuppliersPage() {
         onClose={() => {
           setShowSupplierModal(false);
           setEditingSupplier(undefined);
+          refresh();
+        }}
+      />
+
+      <SupplierContactsModal
+        isOpen={showContactsModal}
+        supplier={contactsSupplier}
+        onClose={() => {
+          setShowContactsModal(false);
+          setContactsSupplier(undefined);
           refresh();
         }}
       />

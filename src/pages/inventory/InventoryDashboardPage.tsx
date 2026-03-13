@@ -45,7 +45,7 @@ export function InventoryDashboardPage() {
   const cards = useMemo(() => {
     const s = summaryQuery.data;
     return [
-      { label: "Total SKUs", value: formatNumber(s?.totalSkus ?? 0) },
+      { label: "Total Items", value: formatNumber(s?.totalSkus ?? 0) },
       { label: "Locations", value: formatNumber(s?.totalLocations ?? 0) },
       { label: "Stock Units", value: formatNumber(s?.totalStockUnits ?? 0) },
       { label: "Out of Stock", value: formatNumber(s?.outOfStockSkus ?? 0) },
@@ -59,21 +59,21 @@ export function InventoryDashboardPage() {
         id: "a1",
         title: "Low stock review",
         description:
-          "Some items are approaching their reorder point. Review low stock SKUs.",
+          "Some items are approaching their low threshold. Review low stock items.",
         severity: "warning",
       },
       {
         id: "a2",
         title: "Out of stock",
         description:
-          "Some SKUs currently have zero stock across all locations.",
+          "Some items currently have zero stock across all locations.",
         severity: "critical",
       },
       {
         id: "a3",
         title: "Inventory check",
         description:
-          "Schedule a quick cycle count for top-selling SKUs this week.",
+          "Schedule a quick cycle count for high-usage items this week.",
         severity: "info",
       },
     ],
