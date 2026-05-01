@@ -5,7 +5,6 @@ export interface CreateOrderBody {
   customerName?: string;
   customerPhone?: string;
   customerEmail?: string;
-  locationId?: string;
   items: {
     productId?: string;
     sku?: string;

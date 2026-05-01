@@ -83,7 +83,7 @@ export function AdjustInventoryItemModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Adjust Stock Item">
+    <Modal isOpen={isOpen} onClose={onClose} title="Adjust Ingredient">
       <div className="space-y-4">
         {item && (
           <div>

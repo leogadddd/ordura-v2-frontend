@@ -54,8 +54,15 @@
 
 /* Utility class to use Cousine */
 .font-cousine {
-  font-family: "Cousine", system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    "Cousine",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
 }
 
 @theme {

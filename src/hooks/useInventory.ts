@@ -1,10 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  fetchStocks,
-  fetchStock,
-  createStock,
-  deleteStock,
-  adjustStock,
   fetchInventoryItems,
   fetchInventoryItem,
   createInventoryItem,
@@ -26,28 +21,10 @@ export const inventoryKeys = {
     [...inventoryKeys.items(), params ?? {}] as const,
   item: (id: string) => [...inventoryKeys.items(), id] as const,
   itemLevels: (id: string) => [...inventoryKeys.items(), id, "levels"] as const,
-  stocks: () => [...inventoryKeys.all, "stocks"] as const,
-  stocksList: (params?: {
-    productId?: string;
-    locationId?: string;
-    search?: string;
-  }) => [...inventoryKeys.stocks(), params ?? {}] as const,
-  stock: (id: string) => [...inventoryKeys.stocks(), id] as const,
   locations: () => [...inventoryKeys.all, "locations"] as const,
   location: (id: string) => [...inventoryKeys.locations(), id] as const,
   summary: () => [...inventoryKeys.all, "summary"] as const,
 };
-
-export function useStocks(params?: {
-  productId?: string;
-  locationId?: string;
-  search?: string;
-}) {
-  return useQuery({
-    queryKey: inventoryKeys.stocksList(params),
-    queryFn: () => fetchStocks(params),
-  });
-}
 
 export function useInventoryItems(params?: { search?: string }) {
   return useQuery({
@@ -122,50 +99,6 @@ export function useInventorySummary() {
   return useQuery({
     queryKey: inventoryKeys.summary(),
     queryFn: () => fetchInventorySummary(),
-  });
-}
-
-export function useStock(id: string) {
-  return useQuery({
-    queryKey: inventoryKeys.stock(id),
-    queryFn: () => fetchStock(id),
-    enabled: !!id,
-  });
-}
-
-export function useAdjustStock() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: adjustStock,
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: inventoryKeys.stocks() });
-      // also refresh product list to update stock totals
-      qc.invalidateQueries({ queryKey: ["products", "list"] });
-    },
-  });
-}
-
-export function useCreateStock() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: createStock,
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: inventoryKeys.stocks() });
-      qc.invalidateQueries({ queryKey: inventoryKeys.summary() });
-      qc.invalidateQueries({ queryKey: ["products", "list"] });
-    },
-  });
-}
-
-export function useDeleteStock() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: deleteStock,
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: inventoryKeys.stocks() });
-      qc.invalidateQueries({ queryKey: inventoryKeys.summary() });
-      qc.invalidateQueries({ queryKey: ["products", "list"] });
-    },
   });
 }
 

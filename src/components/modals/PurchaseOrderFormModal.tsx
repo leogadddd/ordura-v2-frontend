@@ -183,7 +183,7 @@ export function PurchaseOrderFormModal({
             <div className="w-[30%]">
               <h3 className="text-lg font-semibold text-primary">Items</h3>
               <p className="mt-1 text-sm text-gray-600">
-                Add one or more stock items and quantities.
+                Add one or more ingredients and quantities.
               </p>
             </div>
 
@@ -208,7 +208,7 @@ export function PurchaseOrderFormModal({
                     className="grid gap-3 md:grid-cols-[1fr_140px_120px]"
                   >
                     <Select
-                      label={idx === 0 ? "Stock Item" : undefined}
+                      label={idx === 0 ? "Ingredient" : undefined}
                       value={row.inventoryItemId}
                       onChange={(e) =>
                         setLine(idx, {
@@ -259,9 +259,9 @@ export function PurchaseOrderFormModal({
           <Button
             variant="primary"
             onClick={handleSave}
-            isLoading={createMutation.isPending}
+            disabled={createMutation.isPending}
           >
-            Create
+            {createMutation.isPending ? "Creating..." : "Create"}
           </Button>
         </div>
       </div>

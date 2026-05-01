@@ -1,5 +1,14 @@
 import apiClient from "@/lib/apiClient";
 import type { ApiResponse } from "@/lib/response";
+import type { InventoryItem } from "@/api/inventoryApi";
+
+export interface ProductIngredient {
+  id: string;
+  productId: string;
+  inventoryItemId: string;
+  quantity: number;
+  inventoryItem?: InventoryItem;
+}
 
 export interface Product {
   id: string;
@@ -8,17 +17,20 @@ export interface Product {
   category: string;
   description?: string;
   notes?: string;
-  reorderPoint?: number | null;
   cost: number;
   sellingPrice: number;
   status: "ACTIVE" | "INACTIVE" | "OUT_OF_STOCK";
   isDraft: boolean;
   requiresFulfillment: boolean;
   fulfillmentTypeId?: string;
-  // current aggregated stock total (sum across locations)
-  stockQuantity?: number;
+  ingredients?: ProductIngredient[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ProductIngredientData {
+  inventoryItemId: string;
+  quantity: number;
 }
 
 export interface CreateProductData {
@@ -26,12 +38,12 @@ export interface CreateProductData {
   category: string;
   description?: string;
   notes?: string;
-  reorderPoint?: number;
   cost: number;
   sellingPrice: number;
   isDraft?: boolean;
   requiresFulfillment?: boolean;
   fulfillmentTypeId?: string;
+  ingredients?: ProductIngredientData[];
 }
 
 export interface UpdateProductData {
@@ -39,13 +51,13 @@ export interface UpdateProductData {
   category?: string;
   description?: string;
   notes?: string;
-  reorderPoint?: number | null;
   cost?: number;
   sellingPrice?: number;
   status?: "ACTIVE" | "INACTIVE" | "OUT_OF_STOCK";
   isDraft?: boolean;
   requiresFulfillment?: boolean;
   fulfillmentTypeId?: string | null;
+  ingredients?: ProductIngredientData[];
 }
 
 export interface ListProductsParams {

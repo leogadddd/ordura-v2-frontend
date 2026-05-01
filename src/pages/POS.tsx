@@ -1,9 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-// import { Select } from "@/components/ui/Select";
 import { useProducts } from "@/hooks/useProducts";
-import { useLocations } from "@/hooks/useInventory";
-import type { Location } from "@/api/inventoryApi";
 import { POSProductItem } from "@/components/POSProductItem";
 import { AddToCartModal } from "@/components/modals/AddToCartModal";
 import { CheckoutModal } from "@/components/modals/CheckoutModal";
@@ -37,13 +34,6 @@ export function POSPage() {
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // location state
-  const { data: locData } = useLocations();
-  const locations: Location[] = locData || [];
-  const [locationId, setLocationId] = useState<string | undefined>(
-    locations[0]?.id,
-  );
-
   // Fee state
   const [orderDiscount, setOrderDiscount] = useState(0);
   const [serviceFee, setServiceFee] = useState(0);
@@ -52,13 +42,6 @@ export function POSPage() {
   const { data, isLoading, error } = useProducts({
     includeDrafts: false, // Only show active products in POS
   });
-
-  // transform locations when they load
-  useEffect(() => {
-    if (locations.length > 0 && !locationId) {
-      setLocationId(locations[0].id);
-    }
-  }, [locations, locationId]);
 
   // Transform products data for POS display
   const products =
@@ -191,7 +174,6 @@ export function POSPage() {
 
       // Create order
       const res = await createOrder({
-        locationId,
         items: cart.map((item) => ({
           productId: item.id,
           name: item.name,
@@ -292,13 +274,6 @@ export function POSPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl"
             />
-            {/* <Select
-              value={locationId}
-              onChange={(e) => setLocationId(String(e.target.value))}
-              options={locations.map((l) => ({ label: l.name, value: l.id }))}
-              placeholder="Location"
-              className="w-40 ml-2"
-            /> */}
             <Button
               onClick={() => setIsCartModalOpen(true)}
               variant="secondary"

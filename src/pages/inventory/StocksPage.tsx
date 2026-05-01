@@ -130,15 +130,15 @@ export function StocksPage() {
   return (
     <Page className="gap-4">
       <PageHeader
-        title="Stock Items"
-        subtitle="Create and adjust inventory items that aren't POS products."
+        title="Ingredients"
+        subtitle="Create and adjust ingredient stock consumed by POS products."
         actions={
           <>
             <div className="relative w-full sm:w-80 md:w-96">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
               <input
                 type="text"
-                placeholder="Search stock items..."
+                placeholder="Search ingredients..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl"
@@ -167,7 +167,7 @@ export function StocksPage() {
               className="flex items-center gap-2 whitespace-nowrap"
             >
               <PlusIcon className="w-4 h-4" />
-              Add stock item
+              Add ingredient
             </Button>
           </>
         }
@@ -179,7 +179,7 @@ export function StocksPage() {
             rowData={itemsData}
             columnDefs={itemColumns}
             loading={itemsQuery.isLoading || isRefreshing}
-            noRowsMessage="No stock items available."
+            noRowsMessage="No ingredients available."
             height="100%"
             rowSelection={{ mode: "singleRow" }}
           />

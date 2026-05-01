@@ -67,15 +67,19 @@ export function PurchaseOrderMarkDeliveredModal({
           onChange={(e) => setDeliveredAt(e.target.value)}
         />
         <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>
+          <Button
+            variant="secondary"
+            onClick={onClose}
+            disabled={mutation.isPending}
+          >
             Cancel
           </Button>
           <Button
             variant="primary"
             onClick={handleSave}
-            isLoading={mutation.isPending}
+            disabled={mutation.isPending}
           >
-            Save
+            {mutation.isPending ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>

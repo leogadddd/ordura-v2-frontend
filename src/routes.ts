@@ -9,9 +9,6 @@ import {
   PackageIcon,
   SettingsIcon,
   Users,
-  MapPin,
-  TruckIcon,
-  ShelvingUnitIcon,
 } from "lucide-react";
 
 interface NavItem {
@@ -78,19 +75,11 @@ const navigationItems = () => {
       component: lazy(() => import("./pages/products")),
     },
     {
-      label: "Inventory",
-      to: "/inventory",
+      label: "Ingredients",
+      to: "/ingredients",
       icon: PackageIcon,
       permission: makePermission("INVENTORY", "VIEW"),
-      section: "Inventory",
-      component: lazy(() => import("./pages/inventory/InventoryDashboardPage")),
-    },
-    {
-      label: "Stocks",
-      to: "/stocks",
-      icon: ShelvingUnitIcon,
-      permission: makePermission("INVENTORY", "VIEW"),
-      section: "Inventory",
+      section: "Navigation",
       component: lazy(() => import("./pages/inventory/StocksPage")),
     },
     {
@@ -98,24 +87,8 @@ const navigationItems = () => {
       to: "/suppliers",
       icon: Users,
       permission: makePermission("PRODUCTS", "MANAGE"),
-      section: "Inventory",
+      section: "Navigation",
       component: lazy(() => import("./pages/suppliers")),
-    },
-    {
-      label: "Purchase Orders",
-      to: "/purchase-orders",
-      icon: TruckIcon,
-      permission: makePermission("INVENTORY", "VIEW"),
-      section: "Inventory",
-      component: lazy(() => import("./pages/purchaseOrders")),
-    },
-    {
-      label: "Locations",
-      to: "/locations",
-      icon: MapPin,
-      permission: makePermission("INVENTORY", "VIEW"),
-      section: "Inventory",
-      component: lazy(() => import("./pages/inventory/LocationsPage")),
     },
     // {
     //   label: "Orders",
@@ -157,6 +130,14 @@ const navigationItems = () => {
       permission: makePermission("USERS", "MANAGE"),
       section: "User Management",
       component: lazy(() => import("./pages/users")),
+    },
+    {
+      label: "Customers",
+      to: "/customers",
+      icon: Users,
+      permission: makePermission("CUSTOMERS", "MANAGE"),
+      section: "User Management",
+      component: lazy(() => import("./pages/customers")),
     },
     {
       label: "Roles",

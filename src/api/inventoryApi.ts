@@ -1,14 +1,5 @@
 import apiClient from "@/lib/apiClient";
 import type { ApiResponse } from "@/lib/response";
-import type { Product } from "@/api/productsApi";
-
-export interface Stock {
-  id: string;
-  product: Product;
-  location: Location;
-  quantity: number;
-  adjustments?: any[];
-}
 
 export interface Location {
   id: string;
@@ -54,41 +45,6 @@ export interface InventoryLevel {
   createdAt: string;
   updatedAt: string;
 }
-
-export const fetchStocks = async (params?: {
-  productId?: string;
-  locationId?: string;
-  search?: string;
-}) => {
-  const query = new URLSearchParams();
-  if (params) {
-    if (params.productId) query.append("productId", params.productId);
-    if (params.locationId) query.append("locationId", params.locationId);
-    if (params.search) query.append("search", params.search);
-  }
-  const res = await apiClient.get(`/inventory/stocks?${query.toString()}`);
-  return res.data.data as Stock[];
-};
-
-export const fetchStock = async (id: string) => {
-  const res = await apiClient.get(`/inventory/stocks/${id}`);
-  return res.data.data as Stock;
-};
-
-export const createStock = async (data: {
-  productId: string;
-  locationId: string;
-  quantity?: number;
-  reason?: string;
-}) => {
-  const res = await apiClient.post(`/inventory/stocks`, data);
-  return res.data.data as Stock;
-};
-
-export const deleteStock = async (id: string) => {
-  const res = await apiClient.delete(`/inventory/stocks/${id}`);
-  return res.data;
-};
 
 export const fetchInventorySummary = async (): Promise<InventorySummary> => {
   const res =
@@ -155,17 +111,6 @@ export const adjustInventoryLevel = async (data: {
   reason: string;
 }) => {
   const res = await apiClient.post(`/inventory/items/adjust`, data);
-  return res.data;
-};
-
-export const adjustStock = async (data: {
-  stockId?: string;
-  productId?: string;
-  locationId?: string;
-  quantity: number;
-  reason: string;
-}) => {
-  const res = await apiClient.post(`/inventory/adjust`, data);
   return res.data;
 };
 

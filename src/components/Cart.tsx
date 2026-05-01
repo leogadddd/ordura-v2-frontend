@@ -166,7 +166,7 @@ export function Cart({
                   <td className="p-3 text-right font-bold text-gray-900">
                     ₱{(item.price * item.quantity).toFixed(2)}
                   </td>
-                  <td className="p-3 text-center pt-1">
+                  <td className="p-3 pb-1 text-center pt-1">
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();

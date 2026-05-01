@@ -8,6 +8,7 @@ import { Select } from "@/components/ui/Select";
 import { productFormSchema } from "@/pages/products/schema";
 import { InformationCircleIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { useCreateProduct, useUpdateProduct } from "@/hooks/useProducts";
+import { useInventoryItems } from "@/hooks/useInventory";
 import { showToast } from "@/lib/toast";
 import { useOptions } from "@/context/OptionsProvider";
 import type { Product } from "@/api/productsApi";
@@ -19,6 +20,28 @@ interface ProductFormModalProps {
   product?: Product;
 }
 
+type IngredientFormRow = {
+  inventoryItemId: string;
+  quantity: string;
+};
+
+function formatUnit(unit?: string) {
+  switch (unit) {
+    case "ML":
+      return "ml";
+    case "L":
+      return "L";
+    case "OZ":
+      return "oz";
+    case "G":
+      return "g";
+    case "KG":
+      return "kg";
+    default:
+      return "pc";
+  }
+}
+
 export function ProductFormModal({
   isOpen,
   onClose,
@@ -27,7 +50,6 @@ export function ProductFormModal({
   const [formData, setFormData] = useState({
     name: "",
     category: "",
-    reorderPoint: "",
     description: "",
     cost: "",
     sellingPrice: "",
@@ -46,11 +68,13 @@ export function ProductFormModal({
   const [fulfillmentType, setFulfillmentType] = useState<string | undefined>(
     undefined,
   );
+  const [ingredientRows, setIngredientRows] = useState<IngredientFormRow[]>([]);
 
   const { fulfillmentTypes, refreshFulfillmentTypes } = useOptions();
 
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct();
+  const ingredientsQuery = useInventoryItems();
 
   // Fetch fulfillment types on mount if needed
   useEffect(() => {
@@ -67,11 +91,6 @@ export function ProductFormModal({
       setFormData({
         name: product?.name || "",
         category: product?.category || "",
-        reorderPoint:
-          (product as any)?.reorderPoint !== undefined &&
-          (product as any)?.reorderPoint !== null
-            ? String((product as any)?.reorderPoint)
-            : "",
         description: product?.description || "",
         cost: product?.cost?.toString() || "",
         sellingPrice: product?.sellingPrice?.toString() || "",
@@ -81,6 +100,12 @@ export function ProductFormModal({
       // Pre-populate fulfillment fields when editing
       setRequiresFulfillment(product?.requiresFulfillment ?? false);
       setFulfillmentType((product as any)?.fulfillmentTypeId ?? undefined);
+      setIngredientRows(
+        (product?.ingredients ?? []).map((ingredient) => ({
+          inventoryItemId: ingredient.inventoryItemId,
+          quantity: String(ingredient.quantity),
+        })),
+      );
       setErrors({});
     }
   }, [isOpen, product]);
@@ -127,29 +152,115 @@ export function ProductFormModal({
     }
   };
 
+  const ingredientOptions =
+    ingredientsQuery.data?.map((ingredient) => ({
+      label: `${ingredient.name} (${formatUnit(ingredient.measurementUnit)})`,
+      value: ingredient.id,
+    })) ?? [];
+
+  const handleIngredientChange = (
+    index: number,
+    patch: Partial<IngredientFormRow>,
+  ) => {
+    setIngredientRows((prev) =>
+      prev.map((row, rowIndex) =>
+        rowIndex === index ? { ...row, ...patch } : row,
+      ),
+    );
+
+    if (errors.ingredients) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.ingredients;
+        return next;
+      });
+    }
+  };
+
+  const addIngredientRow = () => {
+    setIngredientRows((prev) => [
+      ...prev,
+      { inventoryItemId: "", quantity: "1" },
+    ]);
+  };
+
+  const removeIngredientRow = (index: number) => {
+    setIngredientRows((prev) => prev.filter((_, rowIndex) => rowIndex !== index));
+  };
+
+  const getIngredientPayload = () =>
+    ingredientRows
+      .filter((row) => row.inventoryItemId || row.quantity.trim())
+      .map((row) => ({
+        inventoryItemId: row.inventoryItemId,
+        quantity: parseInt(row.quantity, 10),
+      }));
+
+  const validateIngredients = (): boolean => {
+    const activeRows = ingredientRows.filter(
+      (row) => row.inventoryItemId || row.quantity.trim(),
+    );
+    const seen = new Set<string>();
+
+    for (const [index, row] of activeRows.entries()) {
+      if (!row.inventoryItemId) {
+        setErrors((prev) => ({
+          ...prev,
+          ingredients: `Choose an ingredient on row ${index + 1}`,
+        }));
+        return false;
+      }
+
+      const quantity = parseInt(row.quantity, 10);
+      if (!Number.isInteger(quantity) || quantity <= 0) {
+        setErrors((prev) => ({
+          ...prev,
+          ingredients: `Enter a positive whole quantity on ingredient row ${
+            index + 1
+          }`,
+        }));
+        return false;
+      }
+
+      if (seen.has(row.inventoryItemId)) {
+        setErrors((prev) => ({
+          ...prev,
+          ingredients: "Duplicate ingredients are not allowed",
+        }));
+        return false;
+      }
+
+      seen.add(row.inventoryItemId);
+    }
+
+    if (errors.ingredients) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.ingredients;
+        return next;
+      });
+    }
+
+    return true;
+  };
+
   const handleSave = async () => {
     if (!validateForm()) return;
+    if (!validateIngredients()) return;
 
     try {
-      const reorderPointValue =
-        formData.reorderPoint?.trim() === ""
-          ? undefined
-          : parseInt(formData.reorderPoint, 10);
-
       const productData = {
         name: formData.name,
         category: formData.category,
         description: formData.description || undefined,
         notes: formData.notes || undefined,
-        reorderPoint: Number.isFinite(reorderPointValue)
-          ? reorderPointValue
-          : undefined,
         cost: parseFloat(formData.cost),
         sellingPrice: parseFloat(formData.sellingPrice),
         status: status,
         isDraft: false,
         requiresFulfillment: requiresFulfillment,
         fulfillmentTypeId: requiresFulfillment ? fulfillmentType : undefined,
+        ingredients: getIngredientPayload(),
       };
 
       console.log("Saving product:", productData);
@@ -189,26 +300,21 @@ export function ProductFormModal({
       return;
     }
 
-    try {
-      const reorderPointValue =
-        formData.reorderPoint?.trim() === ""
-          ? undefined
-          : parseInt(formData.reorderPoint, 10);
+    if (!validateIngredients()) return;
 
+    try {
       const productData = {
         name: formData.name,
         category: formData.category,
         description: formData.description || undefined,
         notes: formData.notes || undefined,
-        reorderPoint: Number.isFinite(reorderPointValue)
-          ? reorderPointValue
-          : undefined,
         cost: parseFloat(formData.cost) || 0,
         sellingPrice: parseFloat(formData.sellingPrice) || 0,
         status: status,
         isDraft: true,
         requiresFulfillment: requiresFulfillment,
         fulfillmentTypeId: requiresFulfillment ? fulfillmentType : undefined,
+        ingredients: getIngredientPayload(),
       };
 
       if (product) {
@@ -298,21 +404,6 @@ export function ProductFormModal({
                     onChange={(e) => handleChange("category", e.target.value)}
                     error={errors.category}
                     required
-                  />
-                </Tooltip>
-                <Tooltip
-                  content="Optional threshold used for low-stock alerts"
-                  position="bottom"
-                >
-                  <Input
-                    label="Reorder Point"
-                    type="number"
-                    placeholder="e.g., 10"
-                    value={formData.reorderPoint}
-                    onChange={(e) =>
-                      handleChange("reorderPoint", e.target.value)
-                    }
-                    error={(errors as any).reorderPoint}
                   />
                 </Tooltip>
                 <div className="col-span-2">
@@ -490,6 +581,87 @@ export function ProductFormModal({
                   }))}
                 />
               </div>
+            </div>
+          </section>
+
+          {/* Recipe Section */}
+          <section className="flex gap-6 pt-6 border-t border-gray-200">
+            <div className="w-[30%]">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-lg font-semibold text-primary">Recipe</h3>
+                <Tooltip
+                  content="Ingredients consumed when this product is sold"
+                  position="right"
+                >
+                  <InformationCircleIcon className="w-5 h-5 text-gray-400" />
+                </Tooltip>
+              </div>
+              <p className="text-sm text-gray-600">
+                Add the ingredient quantities used for one sold unit.
+              </p>
+            </div>
+            <div className="w-[70%] space-y-3">
+              {ingredientRows.length > 0 && (
+                <div className="grid gap-3">
+                  {ingredientRows.map((row, index) => (
+                    <div
+                      key={index}
+                      className="grid gap-3 md:grid-cols-[1fr_150px_110px]"
+                    >
+                      <Select
+                        label={index === 0 ? "Ingredient" : undefined}
+                        value={row.inventoryItemId}
+                        onChange={(e) =>
+                          handleIngredientChange(index, {
+                            inventoryItemId: String(e.target.value),
+                          })
+                        }
+                        options={ingredientOptions}
+                        placeholder={
+                          ingredientsQuery.isLoading
+                            ? "Loading..."
+                            : "Select ingredient"
+                        }
+                        disabled={ingredientsQuery.isLoading}
+                      />
+                      <Input
+                        label={index === 0 ? "Qty per sale" : undefined}
+                        type="number"
+                        min={1}
+                        value={row.quantity}
+                        onChange={(e) =>
+                          handleIngredientChange(index, {
+                            quantity: e.target.value,
+                          })
+                        }
+                      />
+                      <div className={index === 0 ? "pt-7" : ""}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeIngredientRow(index)}
+                          className="w-full"
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {errors.ingredients && (
+                <p className="text-sm text-red-600">{errors.ingredients}</p>
+              )}
+
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={addIngredientRow}
+                disabled={ingredientsQuery.isLoading}
+              >
+                Add Ingredient
+              </Button>
             </div>
           </section>
 

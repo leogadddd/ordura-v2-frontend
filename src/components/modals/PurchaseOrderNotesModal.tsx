@@ -103,15 +103,19 @@ export function PurchaseOrderNotesModal({
             placeholder="Type a note…"
           />
           <div className="mt-3 flex justify-end gap-2">
-            <Button variant="secondary" onClick={onClose}>
+            <Button
+              variant="secondary"
+              onClick={onClose}
+              disabled={addNote.isPending}
+            >
               Close
             </Button>
             <Button
               variant="primary"
               onClick={handleAdd}
-              isLoading={addNote.isPending}
+              disabled={addNote.isPending}
             >
-              Add Note
+              {addNote.isPending ? "Adding..." : "Add Note"}
             </Button>
           </div>
         </div>

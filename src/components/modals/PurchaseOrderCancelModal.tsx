@@ -83,15 +83,19 @@ export function PurchaseOrderCancelModal({
           placeholder="Why was this purchase order cancelled?"
         />
         <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>
+          <Button
+            variant="secondary"
+            onClick={onClose}
+            disabled={mutation.isPending}
+          >
             Close
           </Button>
           <Button
             variant="destructive"
             onClick={handleSave}
-            isLoading={mutation.isPending}
+            disabled={mutation.isPending}
           >
-            Cancel Order
+            {mutation.isPending ? "Cancelling..." : "Cancel Order"}
           </Button>
         </div>
       </div>

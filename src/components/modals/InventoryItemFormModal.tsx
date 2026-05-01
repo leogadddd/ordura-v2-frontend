@@ -134,12 +134,12 @@ export function InventoryItemFormModal({
       onClose();
     } catch (error) {
       console.error("Failed to create inventory item", error);
-      showToast.error("Failed to create stock item");
+      showToast.error("Failed to create ingredient");
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add Stock Item">
+    <Modal isOpen={isOpen} onClose={onClose} title="Add Ingredient">
       <div className="flex flex-col h-full">
         <div className="flex-1 overflow-auto space-y-6 pr-4 pt-4 pb-10">
           <section className="flex gap-6">
@@ -148,7 +148,7 @@ export function InventoryItemFormModal({
                 Item Details
               </h3>
               <p className="mt-1 text-sm text-gray-600">
-                Basic information and measurement unit for this stock item.
+                Basic information and measurement unit for this ingredient.
               </p>
             </div>
 
@@ -191,7 +191,7 @@ export function InventoryItemFormModal({
                 Supplier & Alerts
               </h3>
               <p className="mt-1 text-sm text-gray-600">
-                Track who you buy from and configure low stock alerts.
+                Track who you buy from and configure low ingredient alerts.
               </p>
             </div>
 
@@ -231,10 +231,10 @@ export function InventoryItemFormModal({
           <section className="flex gap-6 pt-6 border-t border-gray-200">
             <div className="w-[30%]">
               <h3 className="text-lg font-semibold text-primary">
-                Initial Stock
+                Initial Quantity
               </h3>
               <p className="mt-1 text-sm text-gray-600">
-                Create the first stock adjustment for this item.
+                Create the first quantity adjustment for this ingredient.
               </p>
             </div>
 

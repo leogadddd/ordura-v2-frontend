@@ -117,7 +117,7 @@ export function ProductsPage() {
     <Page className="gap-4">
       <PageHeader
         title="Products"
-        subtitle="Manage your product catalog and inventory."
+        subtitle="Manage the items available in POS."
         actions={
           <>
             <div className="relative w-full sm:w-80 md:w-96">
